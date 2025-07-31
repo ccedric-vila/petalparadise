@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Order Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #fce4ec, #f8bbd0);
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    h2 {
+      text-align: center;
+      color: #ad1457;
+      margin-bottom: 20px;
+    }
+    #backBtn {
+      display: inline-block;
+      background-color: #ec407a;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-bottom: 20px;
+    }
+    #backBtn:hover {
+      background-color: #d81b60;
+    }
+    #orderTable {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    #orderTable th, #orderTable td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+    #orderTable th {
+      background-color: #f8bbd0;
+      color: #6a1b9a;
+    }
+    
+    /* Action Button Styles */
+    .btn-confirm {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 2px;
+      transition: background 0.3s;
+    }
+    .btn-confirm:hover {
+      background-color: #45a049;
+    }
+    
+    .btn-cancel {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 2px;
+      transition: background 0.3s;
+    }
+    .btn-cancel:hover {
+      background-color: #da190b;
+    }
+    
+    .btn-delivery {
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 2px;
+      transition: background 0.3s;
+    }
+    .btn-delivery:hover {
+      background-color: #1976d2;
+    }
+    
+    .btn-delivered {
+      background-color: #9c27b0;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      margin: 2px;
+      transition: background 0.3s;
+    }
+    .btn-delivered:hover {
+      background-color: #7b1fa2;
+    }
+    
+    .status-completed {
+      color: #4caf50;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    
+    .status-cancelled {
+      color: #f44336;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    /* Status text indicators */
+    .status-text {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 8px;
+      margin: 2px;
+    }
+    
+    .confirmed-text {
+      background: rgba(39, 174, 96, 0.1);
+      color: #27ae60;
+      border: 1px solid rgba(39, 174, 96, 0.3);
+    }
+    
+    .delivery-text {
+      background: rgba(52, 152, 219, 0.1);
+      color: #3498db;
+      border: 1px solid rgba(52, 152, 219, 0.3);
+    }
+    
+    /* 🌸 Petal Animation */
+    .petal {
+      position: fixed;
+      top: -50px;
+      width: 25px;
+      height: 25px;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/742/742751.png');
+      background-size: cover;
+      animation: fall linear infinite;
+      z-index: 0;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+  .pdf-btn-container {
+  text-align: right;
+  margin-top: 15px;
+}
+
+#downloadPdfBtn {
+  background-color: #ec407a;
+  color: white;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 25px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#downloadPdfBtn:hover {
+  background-color: #d81b60;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+#downloadPdfBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+  </style>
+</head>
+<body>
+  <!-- 🌸 Petals falling -->
+  <script>
+    for (let i = 0; i < 15; i++) {
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      petal.style.left = Math.random() * 100 + 'vw';
+      petal.style.animationDuration = (5 + Math.random() * 5) + 's';
+      petal.style.animationDelay = (Math.random() * 5) + 's';
+      document.body.appendChild(petal);
+    }
+  </script>
+  <!-- 🔙 Back Button -->
+  <div style="text-align: left;">
+    <button id="backBtn">« Back to Dashboard</button>
+  </div>
+  <h2>Customer Orders</h2>
+  <!-- Status Filter below table -->
+<div class="row justify-content-center mt-3" style="font-family: 'Poppins', sans-serif; margin-bottom: 20px;">
+  <div class="col-auto">
+    <select id="statusFilter" class="form-control text-center" 
+      style="padding:6px 12px; border:1px solid #ccc; border-radius:20px; max-width: 250px;">
+      <option value="">All Status</option>
+      <option value="Pending">Pending</option>
+      <option value="Confirmed">Confirmed</option>
+      <option value="Out for Delivery">Out for Delivery</option>
+      <option value="Delivered">Delivered</option>
+      <option value="Cancelled">Cancelled</option>
+    </select>
+  </div>
+</div>
+
+
+<table id="orderTable">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Customer Name</th>
+      <th>Status</th>
+      <th>Shipping Address</th>
+      <th>Total Amount</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+
+
+      <div class="pdf-btn-container">
+  <button id="downloadPdfBtn">PDF</button>
+      </div>
+  <!-- Auth + Navigation -->
+  <script>
+    $(document).ready(function () {
+      const token = sessionStorage.getItem('token');
+      const userId = sessionStorage.getItem('userId');
+      const role = sessionStorage.getItem('role');
+      if (!token || !userId || role !== 'admin') {
+        sessionStorage.clear();
+        return window.location.href = "/frontend/Userhandling/login.html";
+      }
+      // ✅ Back to Dashboard
+      $("#backBtn").click(() => {
+        window.location.href = "/frontend/Adminhandling/admindashboard.html";
+      });
+    });
+  </script>
+  <script src="/frontend/js/order.js" defer></script>
+</body>
+</html>

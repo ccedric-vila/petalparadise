@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Manage Reviews</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #fce4ec, #f8bbd0);
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    h2 {
+      text-align: center;
+      color: #ad1457;
+      margin-bottom: 20px;
+    }
+
+    #backBtn {
+      display: inline-block;
+      background-color: #ec407a;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-bottom: 20px;
+      border: none;
+    }
+
+    #backBtn:hover {
+      background-color: #d81b60;
+    }
+
+    .table-container {
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    #reviewTable {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    #reviewTable th, #reviewTable td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+
+    #reviewTable th {
+      background-color: #f8bbd0;
+      color: #6a1b9a;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    #reviewTable td:nth-child(2),
+    #reviewTable td:nth-child(3) {
+      text-align: left;
+    }
+
+    #reviewTable td:nth-child(5) {
+      text-align: left;
+      max-width: 250px;
+      word-wrap: break-word;
+    }
+
+    .deleteBtn {
+      background-color: #f48fb1;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .deleteBtn:hover:not(:disabled) {
+      background-color: #ec407a;
+      transform: translateY(-1px);
+    }
+
+    .deleteBtn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      #reviewTable th,
+      #reviewTable td {
+        padding: 8px;
+        font-size: 12px;
+      }
+      
+      .deleteBtn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* 🌸 Petal Animation */
+    .petal {
+      position: fixed;
+      top: -50px;
+      width: 25px;
+      height: 25px;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/742/742751.png');
+      background-size: cover;
+      animation: fall linear infinite;
+      z-index: 0;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+    }
+
+  .pdf-btn-container {
+  text-align: right;
+  margin-top: 15px;
+}
+
+#downloadPdfBtn {
+  background-color: #ec407a;
+  color: white;
+  font-family: 'Patrick Hand', cursive;
+  font-size: 18px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 25px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#downloadPdfBtn:hover {
+  background-color: #d81b60;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+#downloadPdfBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+  </style>
+</head>
+<body>
+
+  <!-- 🌸 Petals Falling -->
+  <script>
+    for (let i = 0; i < 15; i++) {
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      petal.style.left = Math.random() * 100 + 'vw';
+      petal.style.animationDuration = (5 + Math.random() * 5) + 's';
+      petal.style.animationDelay = (Math.random() * 5) + 's';
+      document.body.appendChild(petal);
+    }
+  </script>
+
+  <!-- 🔙 Back Button -->
+  <div style="text-align: left;">
+    <button id="backBtn">« Back to Dashboard</button>
+  </div>
+
+  <h2>Customer Reviews Management</h2>
+
+<div class="row justify-content-center mt-3" style="font-family: 'Poppins', sans-serif; margin-bottom: 20px;">
+  <div class="col-auto">
+    <select id="filterByRating" class="form-control text-center"
+      style="padding:6px 12px; border:1px solid #ccc; border-radius:20px; max-width: 250px;">
+      <option value="">All Ratings</option>
+      <option value="5">⭐ (5 stars)</option>
+      <option value="4">⭐ (4 stars)</option>
+      <option value="3">⭐ (3 stars)</option>
+      <option value="2">⭐ (2 stars)</option>
+      <option value="1">⭐ (1 star)</option>
+    </select>
+  </div>
+</div>
+
+
+
+  <div class="table-container">
+    <table id="reviewTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Customer</th>
+          <th>Order Details</th>
+          <th>Rating</th>
+          <th>Review Comment</th>
+          <th>Date Reviewed</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="7" class="loading">Loading reviews...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+    <div class="pdf-btn-container">
+  <button id="downloadPdfBtn">PDF</button>
+</div>
+
+  <!-- Auth + Navigation -->
+  <script>
+    $(document).ready(function () {
+      const token = sessionStorage.getItem('token');
+      const userId = sessionStorage.getItem('userId');
+      const role = sessionStorage.getItem('role');
+
+      if (!token || !userId || role !== 'admin') {
+        sessionStorage.clear();
+        return window.location.href = "/frontend/Userhandling/login.html";
+      }
+
+      $("#backBtn").click(() => {
+        window.location.href = "/frontend/Adminhandling/admindashboard.html";
+      });
+    });
+  </script>
+
+  <script src="/frontend/js/managereview.js" defer></script>
+</body>
+</html>

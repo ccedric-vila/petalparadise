@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard Charts</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #fce4ec, #f8bbd0);
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    h2 {
+      text-align: center;
+      color: #ad1457;
+      margin-bottom: 30px;
+    }
+
+    #backBtn {
+      display: inline-block;
+      background-color: #ec407a;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-bottom: 20px;
+    }
+
+    #backBtn:hover {
+      background-color: #d81b60;
+    }
+
+    .chart-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .chart-filter {
+      margin-bottom: 25px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .chart-filter select {
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid #f8bbd0;
+      background-color: white;
+      color: #ad1457;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      font-size: 16px;
+    }
+
+    .chart-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    .chart-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      width: 420px;
+      height: 480px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .chart-wrapper {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .no-data {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      color: #ad1457;
+      text-align: center;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+   .loyal-customers-box {
+  background: #fff3e0; /* soft peach highlight */
+  border: 2px solid #ffb74d;
+  border-radius: 25px;
+  padding: 30px;
+  width: 90%;
+  max-width: 900px;
+  margin: 40px auto 0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.loyal-customers-box h3 {
+  text-align: center;
+  color: #e65100;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+#loyalCustomersList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.loyal-card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  min-width: 180px;
+  text-align: center;
+  color: #ad1457;
+  font-weight: 500;
+  transition: transform 0.2s;
+}
+
+.loyal-card:hover {
+  transform: translateY(-5px);
+}
+
+.loading-text, .no-data-text {
+  text-align: center;
+  color: #ad1457;
+  font-size: 16px;
+}
+
+    /* 🌸 Petal Animation */
+    .petal {
+      position: fixed;
+      top: -50px;
+      width: 25px;
+      height: 25px;
+      background-image: url('https://cdn-icons-png.flaticon.com/512/742/742751.png');
+      background-size: cover;
+      animation: fall linear infinite;
+      z-index: 0;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🌸 Petals Falling -->
+  <script>
+    for (let i = 0; i < 15; i++) {
+      const petal = document.createElement('div');
+      petal.className = 'petal';
+      petal.style.left = Math.random() * 100 + 'vw';
+      petal.style.animationDuration = (5 + Math.random() * 5) + 's';
+      petal.style.animationDelay = (Math.random() * 5) + 's';
+      document.body.appendChild(petal);
+    }
+  </script>
+
+  <div style="text-align: left;">
+    <button id="backBtn">« Back to Dashboard</button>
+  </div>
+
+  <h2>Sales Charts</h2>
+
+  <div class="chart-container">
+    <div class="chart-filter">
+      <select id="monthFilter">
+        <option value="all">All Months</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      <select id="yearFilter">
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+      </select>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-box">
+        <div class="chart-wrapper" id="pieChartContainer">
+          <canvas id="pieChart"></canvas>
+          <div class="no-data" id="pieNoData" style="display: none;">No Data Available</div>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-wrapper" id="barChartContainer">
+          <canvas id="barChart"></canvas>
+          <div class="no-data" id="barNoData" style="display: none;">No Data Available</div>
+        </div>
+      </div>
+      <div class="chart-box">
+        <div class="chart-wrapper" id="lineChartContainer">
+          <canvas id="lineChart"></canvas>
+          <div class="no-data" id="lineNoData" style="display: none;">No Data Available</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loyal Customers Chart -->
+    <div class="loyal-customers-box">
+      <h3>Top Buyers</h3>
+      <div id="loyalCustomersList">
+        <p class="loading-text">Loading loyal customers...</p>
+      </div>
+    </div>
+   
+
+  <script>
+    $(document).ready(function () {
+      const token = sessionStorage.getItem('token');
+      const userId = sessionStorage.getItem('userId');
+      const role = sessionStorage.getItem('role');
+
+      if (!token || !userId || role !== 'admin') {
+        sessionStorage.clear();
+        return window.location.href = "/frontend/Userhandling/login.html";
+      }
+
+      $("#backBtn").click(() => {
+        window.location.href = "/frontend/Adminhandling/admindashboard.html";
+      });
+    });
+  </script>
+
+  <script src="/frontend/js/chart.js" defer></script>
+</body>
+</html>

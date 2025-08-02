@@ -4,7 +4,12 @@ $(document).ready(function () {
         alert("You must login first.");
         return window.location.href = "/frontend/Userhandling/login.html";
     }
-
+    const role = sessionStorage.getItem('role');
+if (role === 'admin') {
+    alert("Access Denied: Admins cannot access customer cart.");
+    sessionStorage.clear();
+    return window.location.href = "/frontend/Userhandling/login.html";
+}
     function loadCart() {
         $.ajax({
             url: 'http://localhost:4000/api/v1/cart',

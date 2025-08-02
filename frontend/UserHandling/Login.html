@@ -5,6 +5,7 @@
   <title>User Login</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -389,59 +390,6 @@
   </div>
 
   <script>
-    // Add some interactive effects
-    document.addEventListener('DOMContentLoaded', function() {
-      // Form submission handling
-      document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const button = document.getElementById('login');
-        const originalText = button.textContent;
-        
-        // Add loading state
-        button.classList.add('loading');
-        button.disabled = true;
-        
-        // Simulate login process
-        setTimeout(() => {
-          button.classList.remove('loading');
-          button.disabled = false;
-          button.textContent = originalText;
-          
-          // Show success message with SweetAlert2
-          Swal.fire({
-            title: 'Login Successful!',
-            text: 'Welcome back to our blooming community! 🌻',
-            icon: 'success',
-            confirmButtonColor: '#e91e63',
-            background: '#fce4ec'
-          });
-        }, 2000);
-      });
-
-      // Add input focus effects
-      const inputs = document.querySelectorAll('input');
-      inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-          this.parentElement.style.transform = 'scale(1.02)';
-        });
-        
-        input.addEventListener('blur', function() {
-          this.parentElement.style.transform = 'scale(1)';
-        });
-      });
-
-      // Add register button hover effect
-      const registerButton = document.querySelector('.register-button');
-      registerButton.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-2px) scale(1.05)';
-      });
-      
-      registerButton.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0) scale(1)';
-      });
-    });
-
     // Forgot password function
     function showForgotPassword() {
       Swal.fire({
@@ -473,6 +421,7 @@
     }
   </script>
 
+  <!-- Load your main JavaScript file -->
   <script src="/frontend/js/user.js"></script>
 </body>
 </html>

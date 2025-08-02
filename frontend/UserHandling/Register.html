@@ -5,6 +5,7 @@
   <title>User Registration</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -278,6 +279,23 @@
       transform: translateY(0);
     }
 
+    /* Validation Error Styles */
+.error-message {
+  color: #e91e63;
+  font-size: 0.8rem;
+  margin-top: 5px;
+  padding-left: 10px;
+  display: block;
+}
+
+.error-input {
+  border-color: #e91e63 !important;
+  background: rgba(233, 30, 99, 0.1) !important;
+}
+
+.input-container.error {
+  border-color: #e91e63;
+}
     /* Responsive design */
     @media (max-width: 480px) {
       .registration-container {
@@ -338,29 +356,29 @@
     <h2>Register</h2>
     
     <form id="registerForm">
-      <div class="form-group">
-        <div class="input-container">
-          <input type="text" id="name" placeholder="Full Name" required>
-          <div class="input-icon">👤</div>
-        </div>
-      </div>
+  <div class="form-group">
+    <div class="input-container">
+      <input type="text" id="name" name="name" placeholder="Full Name" required>
+      <div class="input-icon">👤</div>
+    </div>
+  </div>
 
-      <div class="form-group">
-        <div class="input-container">
-          <input type="email" id="email" placeholder="Email" required>
-          <div class="input-icon">✉️</div>
-        </div>
-      </div>
+  <div class="form-group">
+    <div class="input-container">
+      <input type="email" id="email" name="email" placeholder="Email" required>
+      <div class="input-icon">✉️</div>
+    </div>
+  </div>
 
-      <div class="form-group">
-        <div class="input-container">
-          <input type="password" id="password" placeholder="Password" required>
-          <div class="input-icon">🔒</div>
-        </div>
-      </div>
+  <div class="form-group">
+    <div class="input-container">
+      <input type="password" id="password" name="password" placeholder="Password" required>
+      <div class="input-icon">🔒</div>
+    </div>
+  </div>
 
-      <button type="submit" id="register">Register</button>
-    </form>
+  <button type="submit" id="register">Register</button>
+</form>
 
     <!-- Login section -->
     <div class="login-section">
@@ -373,32 +391,32 @@
     // Add some interactive effects
     document.addEventListener('DOMContentLoaded', function() {
       // Form submission handling
-      document.getElementById('registerForm').addEventListener('submit', function(e) {
-        e.preventDefault();
+      // document.getElementById('registerForm').addEventListener('submit', function(e) {
+      //   e.preventDefault();
         
-        const button = document.getElementById('register');
-        const originalText = button.textContent;
+      //   const button = document.getElementById('register');
+      //   const originalText = button.textContent;
         
-        // Add loading state
-        button.classList.add('loading');
-        button.disabled = true;
+      //   // Add loading state
+      //   button.classList.add('loading');
+      //   button.disabled = true;
         
-        // Simulate registration process
-        setTimeout(() => {
-          button.classList.remove('loading');
-          button.disabled = false;
-          button.textContent = originalText;
+      //   // Simulate registration process
+      //   setTimeout(() => {
+      //     button.classList.remove('loading');
+      //     button.disabled = false;
+      //     button.textContent = originalText;
           
-          // Show success message with SweetAlert2
-          Swal.fire({
-            title: 'Registration Successful!',
-            text: 'Welcome to our blooming community! 🌸',
-            icon: 'success',
-            confirmButtonColor: '#e91e63',
-            background: '#fce4ec'
-          });
-        }, 2000);
-      });
+      //     // Show success message with SweetAlert2
+      //     Swal.fire({
+      //       title: 'Registration Successful!',
+      //       text: 'Welcome to our blooming community! 🌸',
+      //       icon: 'success',
+      //       confirmButtonColor: '#e91e63',
+      //       background: '#fce4ec'
+      //     });
+      //   }, 2000);
+      // });
 
       // Add input focus effects
       const inputs = document.querySelectorAll('input');

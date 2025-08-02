@@ -3,7 +3,13 @@ const admin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     return next();
   }
-  return res.status(403).json({ error: 'Access denied. Admins only.' });
+  
+  // More descriptive error message
+  return res.status(403).json({ 
+    error: 'Access denied. Admin privileges required.',
+    message: 'You do not have permission to access this resource. This area is restricted to administrators only.',
+    redirectTo: '/frontend/Userhandling/home.html'
+  });
 };
 
 module.exports = admin;

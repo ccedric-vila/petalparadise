@@ -373,9 +373,16 @@
       const role = sessionStorage.getItem('role');
 
       if (!token || !userId || role !== 'admin') {
-        sessionStorage.clear();
-        return window.location.href = "/frontend/Userhandling/login.html";
-      }
+    // Show authorization message
+    if (role && role !== 'admin') {
+        alert("Access Denied: You do not have admin privileges to access this page.");
+        // Or use SweetAlert if available:
+        // Swal.fire("Access Denied", "You do not have admin privileges to access this page.", "error");
+    }
+    
+    sessionStorage.clear();
+    window.location.href = "/frontend/Userhandling/login.html";
+}
 
       $("#backBtn").click(() => {
         window.location.href = "/frontend/Adminhandling/admindashboard.html";

@@ -1,9 +1,14 @@
 $(document).ready(function() {
     const token = sessionStorage.getItem('token');
     if (!token) return window.location.href = "/frontend/Userhandling/login.html";
-
+const role = sessionStorage.getItem('role');
+    if (role === 'admin') {
+        alert("Access Denied: Admins cannot access Order History.");
+        sessionStorage.clear();
+        return window.location.href = "/frontend/Userhandling/login.html";
+    }
     let editOrderId = null; // Changed from editOrderItemId to editOrderId
-
+    
     // Load order history
     function loadOrderHistory() {
         // Show loading indicator

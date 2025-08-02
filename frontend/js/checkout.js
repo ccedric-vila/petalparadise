@@ -6,7 +6,12 @@ $(document).ready(function () {
         alert("No checkout data found. Please checkout first.");
         return window.location.href = "/frontend/Userhandling/home.html";
     }
-
+    const role = sessionStorage.getItem('role');
+    if (role === 'admin') {
+        alert("Access Denied: Admins cannot access this.");
+        sessionStorage.clear();
+        return window.location.href = "/frontend/Userhandling/login.html";
+    }
     // Parse checkout data
     let checkout;
     try {

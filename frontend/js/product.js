@@ -19,13 +19,21 @@ $(document).ready(function () {
         url: `http://localhost:4000/api/v1/profile/${userId}`,
         headers: { 'Authorization': `Bearer ${token}` },
         success: function (res) {
-            if (res.user.role !== 'admin') {
-                sessionStorage.clear();
-                window.location.href = "/frontend/Userhandling/home.html";
-                return;
-            }
-            loadProducts();
-            loadSuppliers();
+    if (res.user.role !== 'admin') {
+        // Show authorization message before redirecting
+        Swal.fire({
+            title: "Access Denied",
+            text: "You do not have admin privileges to access the product management page. This area is restricted to administrators only.",
+            icon: "error",
+            confirmButtonText: "OK"
+        }).then(() => {
+            sessionStorage.clear();
+            window.location.href = "/frontend/Userhandling/home.html";
+        });
+        return;
+    }
+    loadProducts();
+    loadSuppliers();
 
             // Insert filter dropdowns above the table
         const filterHTML = `

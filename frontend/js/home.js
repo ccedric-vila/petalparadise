@@ -3,7 +3,12 @@ $(document).ready(function () {
     const userId = sessionStorage.getItem('userId');
 
     if (!token || !userId) return window.location.href = "/frontend/Userhandling/login.html";
-
+    const role = sessionStorage.getItem('role');
+    if (role === 'admin') {
+        alert("Access Denied: Admins cannot access customer cart.");
+        sessionStorage.clear();
+        return window.location.href = "/frontend/Userhandling/login.html";
+    }
     let allProducts = []; // Store all products for filtering
     let filteredProducts = []; // Store filtered products for infinite scroll
     let displayedProducts = []; // Products currently displayed
@@ -42,12 +47,203 @@ $(document).ready(function () {
             headers: { 'Authorization': `Bearer ${token}` },
             success: data => {
                 allProducts = data.products || [];
+                initializeAutocomplete(); // Initialize autocomplete after products are loaded
                 applyFilters(); // Apply filters after loading products
             },
             error: () => {
                 alert('Failed to load products');
                 console.error('Failed to load products');
             }
+        });
+    }
+
+    // Autocomplete functionality
+    function initializeAutocomplete() {
+        const searchInput = $('#searchInput');
+        let autocompleteContainer;
+        
+        // Create autocomplete container
+        function createAutocompleteContainer() {
+            if (!autocompleteContainer) {
+                autocompleteContainer = $(`
+                    <div id="autocomplete-container" style="
+                        position: absolute;
+                        top: 100%;
+                        left: 0;
+                        right: 0;
+                        background: white;
+                        border: 2px solid #f8bbd0;
+                        border-top: none;
+                        border-radius: 0 0 12px 12px;
+                        max-height: 200px;
+                        overflow-y: auto;
+                        z-index: 1000;
+                        box-shadow: 0 4px 15px rgba(236, 64, 122, 0.2);
+                        display: none;
+                    ">
+                    </div>
+                `);
+                
+                // Make search input container relative
+                searchInput.parent().css('position', 'relative');
+                searchInput.after(autocompleteContainer);
+            }
+            return autocompleteContainer;
+        }
+        
+        // Get suggestions based on input
+        function getSuggestions(query) {
+            if (!query.trim() || query.length < 2) return [];
+            
+            const suggestions = new Set();
+            const queryLower = query.toLowerCase();
+            
+            allProducts.forEach(product => {
+                // Add product name suggestions
+                if (product.name.toLowerCase().includes(queryLower)) {
+                    suggestions.add(product.name);
+                }
+                
+                // Add category suggestions
+                if (product.category.toLowerCase().includes(queryLower)) {
+                    suggestions.add(product.category);
+                }
+                
+                // Add usage type suggestions
+                if (product.usage_type.toLowerCase().includes(queryLower)) {
+                    suggestions.add(product.usage_type);
+                }
+                
+                // Add color suggestions
+                if (product.color && product.color.toLowerCase().includes(queryLower)) {
+                    suggestions.add(product.color);
+                }
+            });
+            
+            return Array.from(suggestions).slice(0, 8); // Limit to 8 suggestions
+        }
+        
+        // Render suggestions
+        function renderSuggestions(suggestions, query) {
+            const container = createAutocompleteContainer();
+            
+            if (suggestions.length === 0) {
+                container.hide();
+                return;
+            }
+            
+            let html = '';
+            suggestions.forEach(suggestion => {
+                // Highlight matching text
+                const highlightedText = suggestion.replace(
+                    new RegExp(`(${query})`, 'gi'),
+                    '<strong style="color: #ec407a;">$1</strong>'
+                );
+                
+                html += `
+                    <div class="autocomplete-item" data-value="${suggestion}" style="
+                        padding: 10px 15px;
+                        cursor: pointer;
+                        border-bottom: 1px solid rgba(248, 187, 208, 0.3);
+                        transition: background-color 0.2s ease;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                    ">
+                        <span style="color: #ec407a;">🔍</span>
+                        <span>${highlightedText}</span>
+                    </div>
+                `;
+            });
+            
+            container.html(html).show();
+            
+            // Add hover effects
+            container.find('.autocomplete-item').hover(
+                function() {
+                    $(this).css('background-color', 'rgba(248, 187, 208, 0.2)');
+                },
+                function() {
+                    $(this).css('background-color', 'transparent');
+                }
+            );
+            
+            // Handle click on suggestion
+            container.find('.autocomplete-item').click(function() {
+                const value = $(this).data('value');
+                searchInput.val(value);
+                container.hide();
+                applyFilters(); // Trigger search
+            });
+        }
+        
+        // Enhanced search input handler - replace existing search input handler
+        searchInput.off('input').on('input', function() {
+            const query = $(this).val();
+            
+            clearTimeout(this.searchTimeout);
+            this.searchTimeout = setTimeout(() => {
+                // Show autocomplete suggestions
+                const suggestions = getSuggestions(query);
+                renderSuggestions(suggestions, query);
+                
+                // Apply filters
+                applyFilters();
+            }, 200); // Reduced delay for better UX
+        });
+        
+        // Handle keyboard navigation
+        searchInput.on('keydown', function(e) {
+            const container = createAutocompleteContainer();
+            const items = container.find('.autocomplete-item');
+            const activeItem = container.find('.autocomplete-item.active');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (activeItem.length === 0) {
+                    items.first().addClass('active').css('background-color', 'rgba(236, 64, 122, 0.2)');
+                } else {
+                    const next = activeItem.next('.autocomplete-item');
+                    if (next.length) {
+                        activeItem.removeClass('active').css('background-color', 'transparent');
+                        next.addClass('active').css('background-color', 'rgba(236, 64, 122, 0.2)');
+                    }
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (activeItem.length > 0) {
+                    const prev = activeItem.prev('.autocomplete-item');
+                    if (prev.length) {
+                        activeItem.removeClass('active').css('background-color', 'transparent');
+                        prev.addClass('active').css('background-color', 'rgba(236, 64, 122, 0.2)');
+                    }
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeItem.length > 0) {
+                    const value = activeItem.data('value');
+                    searchInput.val(value);
+                    container.hide();
+                    applyFilters();
+                }
+            } else if (e.key === 'Escape') {
+                container.hide();
+            }
+        });
+        
+        // Hide autocomplete when clicking outside
+        $(document).on('click', function(e) {
+            if (!searchInput.is(e.target) && !createAutocompleteContainer().is(e.target) && 
+                createAutocompleteContainer().has(e.target).length === 0) {
+                createAutocompleteContainer().hide();
+            }
+        });
+        
+        // Hide autocomplete when search input loses focus (with delay)
+        searchInput.on('blur', function() {
+            setTimeout(() => {
+                createAutocompleteContainer().hide();
+            }, 200); // Delay to allow click on suggestions
         });
     }
 
@@ -573,13 +769,8 @@ $(document).ready(function () {
         });
     }
 
-    // Auto-apply filters when any filter input changes
-    $('#searchInput').on('input', function() {
-        clearTimeout(this.searchTimeout);
-        this.searchTimeout = setTimeout(() => {
-            applyFilters();
-        }, 300); // Debounce search for 300ms
-    });
+    // Remove the old search input handler and replace with the one in initializeAutocomplete()
+    // The initializeAutocomplete() function now handles the search input events
 
     $('#categoryFilter, #usageTypeFilter, #colorFilter, #priceSort, #stockSort').on('change', function() {
         applyFilters();

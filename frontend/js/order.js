@@ -30,7 +30,7 @@ $(document).ready(function () {
 
     function loadOrders() {
         $.ajax({
-            url: 'http://localhost:4000/api/v1/orders',
+            url: 'http://localhost:4000/api/v1/orders?sort=latest',
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` },
             success: function (orders) {
@@ -46,24 +46,29 @@ $(document).ready(function () {
 
  
     function renderOrders(orders) {
-        let rows = '';
-        orders.forEach((order, index) => {
-            let actionButtons = getActionButtons(order.status, order.id);
+    // Sort orders by ID in descending order (latest first)
+    const sortedOrders = orders.sort((a, b) => b.id - a.id);
+    
+    let rows = '';
+    sortedOrders.forEach((order, index) => {
+        let actionButtons = getActionButtons(order.status, order.id);
 
-            rows += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${order.customer_name || 'N/A'}</td>
-                    <td><span class="status-badge status-${order.status.toLowerCase().replace(' ', '-')}">${order.status}</span></td>
-                    <td>${order.shipping_address || '-'}</td>
-                    <td class="amount">₱${order.total_amount || 0}</td>
-                    <td class="actions-cell">
-                        ${actionButtons}
-                    </td>
-                </tr>`;
-        });
-        $('#orderTable tbody').html(rows);
-    }
+        rows += `
+             <tr>
+        <td>${index + 1}</td>
+        <td>${order.customer_name || 'N/A'}</td>
+        <td style="font-size: 12px;">${new Date(order.created_at).toLocaleDateString()}</td>
+        <td style="max-width: 200px; word-wrap: break-word; font-size: 11px;">${order.ordered_products || 'No products'}</td>
+        <td><span class="status-badge status-${order.status.toLowerCase().replace(' ', '-')}">${order.status}</span></td>
+        <td>${order.shipping_address || '-'}</td>
+        <td class="amount">₱${order.total_amount || 0}</td>
+        <td class="actions-cell">
+            ${actionButtons}
+        </td>
+            </tr>`;
+    });
+    $('#orderTable tbody').html(rows);
+}
 
     function getActionButtons(status, orderId) {
         switch (status) {

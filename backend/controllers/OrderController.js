@@ -27,10 +27,17 @@ exports.getAllOrders = (req, res) => {
         (SELECT SUM(oi.quantity * p.price) 
          FROM order_items oi 
          JOIN products p ON oi.product_id = p.id 
-         WHERE oi.order_id = o.id) AS total_amount
+         WHERE oi.order_id = o.id) AS total_amount,
+        GROUP_CONCAT(
+            CONCAT(p.name, ' (', oi.quantity, ')')
+            ORDER BY p.name SEPARATOR ', '
+        ) AS ordered_products
     FROM orders o
     JOIN users u ON o.user_id = u.id
-    ORDER BY o.created_at DESC
+    LEFT JOIN order_items oi ON o.id = oi.order_id
+    LEFT JOIN products p ON oi.product_id = p.id
+    GROUP BY o.id
+    ORDER BY o.id DESC
 `;
     db.query(sql, (err, rows) => {
         if (err) {
@@ -279,14 +286,21 @@ async function generatePdfReceipt(order, items, totalAmount, filePath) {
 exports.downloadOrdersPDF = (req, res) => {
     db.query(
         `SELECT o.id, o.created_at, o.status, 
-                u.name as customer_name, u.email, u.address,
-                (SELECT COALESCE(SUM(oi.quantity * p.price), 0)
-                 FROM order_items oi 
-                 JOIN products p ON oi.product_id = p.id 
-                 WHERE oi.order_id = o.id) AS total_amount
-         FROM orders o
-         JOIN users u ON o.user_id = u.id
-         ORDER BY o.created_at DESC`,
+        u.name as customer_name, u.email, u.address,
+        (SELECT COALESCE(SUM(oi.quantity * p.price), 0)
+         FROM order_items oi 
+         JOIN products p ON oi.product_id = p.id 
+         WHERE oi.order_id = o.id) AS total_amount,
+        GROUP_CONCAT(
+            CONCAT(p.name, ' (', oi.quantity, ')')
+            ORDER BY p.name SEPARATOR ', '
+        ) AS ordered_products
+ FROM orders o
+ JOIN users u ON o.user_id = u.id
+ LEFT JOIN order_items oi ON o.id = oi.order_id
+ LEFT JOIN products p ON oi.product_id = p.id
+ GROUP BY o.id
+ ORDER BY o.created_at DESC`,
         (err, results) => {
             if (err) {
                 console.error('Error fetching orders for PDF:', err);
@@ -315,8 +329,7 @@ exports.downloadOrdersPDF = (req, res) => {
             doc.moveTo(40, doc.y).lineTo(550, doc.y).strokeColor('#ec407a').lineWidth(1.5).stroke().moveDown(0.3);
 
             // columns
-            const colX = { id: 45, date: 90, customer: 180, status: 330, total: 400 };
-            let currentY = doc.y + 5;
+            const colX = { id: 45, date: 90, customer: 180, products: 280, status: 380, total: 450 };            let currentY = doc.y + 5;
             const rowHeight = 14;
 
             // header row
@@ -324,6 +337,7 @@ exports.downloadOrdersPDF = (req, res) => {
                 .text('ID', colX.id, currentY)
                 .text('Date', colX.date, currentY)
                 .text('Customer', colX.customer, currentY)
+                .text('Products', colX.products, currentY)
                 .text('Status', colX.status, currentY)
                 .text('Total', colX.total, currentY);
 
@@ -340,11 +354,12 @@ exports.downloadOrdersPDF = (req, res) => {
                 }
 
                 doc
-                    .text(order.id.toString(), colX.id, rowY)
-                    .text(new Date(order.created_at).toLocaleDateString(), colX.date, rowY)
-                    .text(order.customer_name.length > 20 ? order.customer_name.substring(0, 20) + '…' : order.customer_name, colX.customer, rowY)
-                    .text(order.status, colX.status, rowY)
-                    .text(Number(order.total_amount).toFixed(2) + ' ', colX.total, rowY);
+                .text(order.id.toString(), colX.id, rowY)
+                .text(new Date(order.created_at).toLocaleDateString(), colX.date, rowY)
+                .text(order.customer_name.length > 15 ? order.customer_name.substring(0, 15) + '…' : order.customer_name, colX.customer, rowY)
+                .text(order.ordered_products && order.ordered_products.length > 15 ? order.ordered_products.substring(0, 15) + '…' : (order.ordered_products || 'N/A'), colX.products, rowY)
+                .text(order.status, colX.status, rowY)
+                .text(Number(order.total_amount).toFixed(2) + ' ', colX.total, rowY);
             });
 
             // footer

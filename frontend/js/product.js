@@ -154,7 +154,7 @@ function loadSuppliers(selectedSupplierId = null) {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` },
         success: function (data) {
-            let options = '<option value="">-- Supplier --</option>';
+            let options = '<option value="">-- Select Supplier --</option>';
             let filterOptions = '<option value="">All Suppliers</option>';
             data.forEach(supplier => {
                 const selected = supplier.id == selectedSupplierId ? 'selected' : '';
@@ -197,6 +197,7 @@ function loadSuppliers(selectedSupplierId = null) {
                             <td>${product.name}</td>
                             <td>${product.category}</td>
                             <td>${product.usage_type}</td>
+                            <td>${product.color || ''}</td>
                             <td>₱${product.price}</td>
                             <td>${product.stock}</td>
                             <td>${imageDisplay}</td>
@@ -428,7 +429,7 @@ function applyFilters() {
     $('#productTable tbody tr').each(function () {
         const rowCategory = $(this).find('td:nth-child(3)').text().toLowerCase();
         const rowUsage = $(this).find('td:nth-child(4)').text().toLowerCase();
-        const rowSupplier = $(this).find('td:nth-child(8)').text().toLowerCase();
+        const rowSupplier = $(this).find('td:nth-child(9)').text().toLowerCase();
 
         const matchCategory = !category || rowCategory === category;
         const matchUsage = !usage || rowUsage === usage;

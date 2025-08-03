@@ -1,10 +1,10 @@
-// controllers/logoutController.js
+
 const connection = require('../config/db');
 
 const logoutUser = (req, res) => {
-    const userId = req.user.userId; // From JWT middleware
+    const userId = req.user.userId; 
 
-    // Clear JWT token from database
+    // clear JWT token from database
     connection.query(
         'UPDATE users SET jwt_token = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
         [userId],

@@ -10,7 +10,7 @@ const loginUser = async (req, res) => {
     }
 
     try {
-        // Check if user exists and is verified
+        // check if user exists and is verified
         connection.query(
             'SELECT * FROM users WHERE email = ? AND is_verified = "yes" AND deleted_at IS NULL',
             [email],
@@ -26,18 +26,18 @@ const loginUser = async (req, res) => {
 
                 const user = results[0];
 
-                // Check if user account is active
+                // check if user account is active
                 if (user.status === 'inactive') {
                     return res.status(401).json({ message: 'Account has been deactivated. Please contact support.' });
                 }
 
-                // Check password
+                // check password
                 const isPasswordValid = await bcrypt.compare(password, user.password);
                 if (!isPasswordValid) {
                     return res.status(401).json({ message: 'Invalid credentials.' });
                 }
 
-                // 🔑 GENERATE JWT TOKEN FOR AUTHENTICATION (15pts)
+                // GENERATE JWT TOKEN FOR AUTHENTICATION
                 const token = jwt.sign(
                     { 
                         userId: user.id, 
@@ -45,11 +45,11 @@ const loginUser = async (req, res) => {
                         role: user.role,
                         name: user.name
                     },
-                    process.env.JWT_SECRET, // Using your JWT_SECRET from .env
-                    { expiresIn: process.env.JWT_EXPIRATION || '1h' } // Using your JWT_EXPIRATION from .env
+                    process.env.JWT_SECRET, 
+                    { expiresIn: process.env.JWT_EXPIRATION || '1h' } 
                 );
 
-                // 💾 SAVE TOKEN IN USERS TABLE (5pts)
+                // SAVE TOKEN IN USERS TABLE 
                 connection.query(
                     'UPDATE users SET jwt_token = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                     [token, user.id],
@@ -61,7 +61,7 @@ const loginUser = async (req, res) => {
 
                         console.log(`✅ JWT Token generated and saved for user ID: ${user.id}`);
 
-                        // Return success response with token and user data (matching your frontend expectations)
+                        // return success response with token and user data 
                         res.status(200).json({
                             success: 'Login successful!',
                             token: token,

@@ -1,7 +1,7 @@
 const connection = require('../config/db');
 
 exports.getLandingData = (req, res) => {
-    // Public: get limited products for landing page showcase
+    // get limited products for landing page showcase
     const query = `
         SELECT id, name, category, usage_type, description, price, color, stock, image, created_at
         FROM products
@@ -20,7 +20,7 @@ exports.getLandingData = (req, res) => {
 };
 
 exports.getFeaturedProducts = (req, res) => {
-    // Get featured products (latest 6 products with stock)
+    // featured products 
     const query = `
         SELECT id, name, category, usage_type, description, price, color, stock, image, created_at
         FROM products

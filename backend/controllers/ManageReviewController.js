@@ -1,14 +1,14 @@
 const db = require('../config/db');
 const PDFDocument = require('pdfkit');
 
-// Helper function to get user ID from different possible properties
+// helper function to get user ID
 const getUserId = (user) => {
     return user.id || user.user_id || user.userId || user.sub;
 };
 
-// Get all reviews with user & order info (fixed to match schema)
+// get all reviews with user & order info 
 exports.getAllReviews = (req, res) => {
-    // Handle user ID if authentication is required
+    // handle user ID if authentication is required
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -39,9 +39,9 @@ exports.getAllReviews = (req, res) => {
     });
 };
 
-// Delete review by ID
+// delete review by ID
 exports.deleteReviewById = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -51,7 +51,7 @@ exports.deleteReviewById = (req, res) => {
 
     const reviewId = req.params.id;
     
-    // First check if review exists
+    
     const checkSql = 'SELECT id FROM reviews WHERE id = ?';
     db.query(checkSql, [reviewId], (err, result) => {
         if (err) {
@@ -63,7 +63,7 @@ exports.deleteReviewById = (req, res) => {
             return res.status(404).json({ message: 'Review not found' });
         }
         
-        // Delete the review
+        // delete the review
         const deleteSql = 'DELETE FROM reviews WHERE id = ?';
         db.query(deleteSql, [reviewId], (err, deleteResult) => {
             if (err) {
@@ -77,7 +77,7 @@ exports.deleteReviewById = (req, res) => {
 };
 
 exports.downloadReviewsPDF = (req, res) => {
-    // Optional: get user ID if needed
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -109,7 +109,7 @@ exports.downloadReviewsPDF = (req, res) => {
         res.setHeader('Content-Disposition', 'attachment; filename=reviews.pdf');
         doc.pipe(res);
 
-        // Title
+        // title
         doc
             .fillColor('#6a1b9a')
             .fontSize(20)
@@ -122,15 +122,15 @@ exports.downloadReviewsPDF = (req, res) => {
             .text('Customer Reviews', { align: 'center' })
             .moveDown(0.5);
 
-        // Separator
+        // separator
         doc.moveTo(40, doc.y).lineTo(550, doc.y).strokeColor('#ec407a').lineWidth(1.5).stroke().moveDown(0.3);
 
-        // Column positions
+        // column positions
         const colX = { id: 45, user: 80, rating: 200, products: 250, comment: 400 };
         let currentY = doc.y + 5;
         const rowHeight = 14;
 
-        // Header
+        // header
         doc.fontSize(9).font('Courier-Bold').fillColor('#4a148c')
             .text('ID', colX.id, currentY)
             .text('User', colX.user, currentY)
@@ -138,11 +138,11 @@ exports.downloadReviewsPDF = (req, res) => {
             .text('Products', colX.products, currentY)
             .text('Comment', colX.comment, currentY);
 
-        // Line under header
+        // line under header
         currentY += rowHeight;
         doc.moveTo(40, currentY - 2).lineTo(550, currentY - 2).strokeColor('#b39ddb').lineWidth(1).stroke();
 
-        // Rows
+        // rows
         doc.font('Courier').fillColor('black');
         results.forEach((review, idx) => {
             const rowY = currentY + idx * rowHeight;
@@ -167,7 +167,7 @@ exports.downloadReviewsPDF = (req, res) => {
                     colX.comment, rowY);
         });
 
-        // Footer
+        // footer
         const footerY = currentY + results.length * rowHeight + 10;
         doc.fontSize(9).fillColor('#999')
             .text(`Generated on ${new Date().toLocaleString()}`, 40, footerY, { align: 'right' });

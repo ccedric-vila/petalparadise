@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-// 🛒 Solo checkout (updated)
+// solo checkout
 exports.checkoutSolo = (req, res) => {
     const userId = req.user.id;
     const { productId } = req.body;
@@ -32,7 +32,7 @@ exports.checkoutSolo = (req, res) => {
     });
 };
 
-// 🛒 Cart checkout (updated)
+// cartcheckout
 exports.checkoutCart = (req, res) => {
     const userId = req.user.id;
 
@@ -68,7 +68,7 @@ exports.checkoutCart = (req, res) => {
     });
 };
 
-// 📦 Get checkout details (updated)
+// fetch
 exports.getCheckoutDetails = (req, res) => {
     const userId = req.user.id;
 
@@ -109,7 +109,7 @@ exports.getCheckoutDetails = (req, res) => {
     });
 };
 
-// ✅ Confirm checkout (no changes needed as it doesn't reference price)
+// confirm checkout
 exports.confirmCheckout = (req, res) => {
     const { orderId } = req.body;
     const userId = req.user.id;

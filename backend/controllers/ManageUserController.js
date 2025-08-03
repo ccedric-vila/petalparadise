@@ -1,13 +1,13 @@
 const connection = require('../config/db');
 const PDFDocument = require('pdfkit');
 
-// Helper function to get user ID from different possible properties
+// helper function to get user ID 
 const getUserId = (user) => {
     return user.id || user.user_id || user.userId || user.sub;
 };
 
 exports.getAllUsers = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -25,7 +25,7 @@ exports.getAllUsers = (req, res) => {
 };
 
 exports.getUserById = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -46,7 +46,7 @@ exports.getUserById = (req, res) => {
 };
 
 exports.updateUserRoleStatus = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -81,7 +81,7 @@ exports.downloadUsersPDF = (req, res) => {
 
             doc.pipe(res);
 
-            // Title
+            // title
             doc
                 .fillColor('#6a1b9a')
                 .fontSize(20)
@@ -94,16 +94,16 @@ exports.downloadUsersPDF = (req, res) => {
                 .text('User List', { align: 'center' })
                 .moveDown(0.5);
 
-            // Separator
+            // separator
             doc.moveTo(40, doc.y).lineTo(550, doc.y).strokeColor('#ec407a').lineWidth(1.5).stroke().moveDown(0.3);
 
-            // Column positions
+            // column positions
             const colX = { id: 45, name: 80, email: 200, phone: 330, role: 410, status: 460 };
 
             let currentY = doc.y + 5;
             const rowHeight = 14;
 
-            // Header
+            // header
             doc.fontSize(10).font('Courier-Bold').fillColor('#4a148c')
                 .text('ID', colX.id, currentY)
                 .text('Name', colX.name, currentY)
@@ -112,17 +112,17 @@ exports.downloadUsersPDF = (req, res) => {
                 .text('Role', colX.role, currentY)
                 .text('Status', colX.status, currentY);
 
-            // Line under header
+            // line under header
             currentY += rowHeight;
             doc.moveTo(40, currentY - 2).lineTo(550, currentY - 2).strokeColor('#b39ddb').lineWidth(1).stroke();
 
-            // Rows
+            // rows
             doc.font('Courier').fillColor('black');
 
             results.forEach((user, idx) => {
                 const rowY = currentY + idx * rowHeight;
 
-                // Alternate background
+                
                 if (idx % 2 === 0) {
                     doc.rect(40, rowY - 2, 510, rowHeight).fill('#f3e5f5').fillColor('black');
                 }
@@ -136,7 +136,7 @@ exports.downloadUsersPDF = (req, res) => {
                     .text(user.status, colX.status, rowY);
             });
 
-            // Footer
+            // footer
             const footerY = currentY + results.length * rowHeight + 10;
             doc.fontSize(9).fillColor('#999').text(`Generated on ${new Date().toLocaleString()}`, 40, footerY, { align: 'right' });
 

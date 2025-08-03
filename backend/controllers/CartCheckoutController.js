@@ -1,13 +1,12 @@
 const db = require('../config/db');
 
-// 🛒 Cart page - Selected items checkout preparation
+// Selected items checkout preparation
 exports.prepareCartCheckout = (req, res) => {
-    // Debug logging to see what's in req.user
+    
     console.log('prepareCartCheckout - req.user:', req.user);
     
-    // Try multiple possible user ID sources
     const userId = req.user?.id || req.user?.userId || req.userId;
-    const { selectedItems } = req.body; // Array of cart item IDs or product IDs
+    const { selectedItems } = req.body; 
 
     console.log('prepareCartCheckout - userId:', userId);
     console.log('prepareCartCheckout - selectedItems:', selectedItems);
@@ -23,7 +22,7 @@ exports.prepareCartCheckout = (req, res) => {
     let queryParams;
 
     if (selectedItems && selectedItems.length > 0) {
-        // Specific selected items
+        // selected items
         const placeholders = selectedItems.map(() => '?').join(',');
         getCartSql = `
             SELECT c.product_id, c.quantity, p.name, p.price, p.image, p.stock,
@@ -35,7 +34,7 @@ exports.prepareCartCheckout = (req, res) => {
         queryParams = [userId, ...selectedItems];
         console.log('Using selected items query with params:', queryParams);
     } else {
-        // All cart items
+        // all cart items
         getCartSql = `
             SELECT c.product_id, c.quantity, p.name, p.price, p.image, p.stock,
                    (c.quantity * p.price) as subtotal
@@ -59,7 +58,7 @@ exports.prepareCartCheckout = (req, res) => {
         console.log('Cart items data:', cartItems);
         
         if (cartItems.length === 0) {
-            // Let's check if the user has any cart items at all
+            // check if the user has items in cart
             const checkAllCartSql = 'SELECT * FROM cart_items WHERE user_id = ?';
             db.query(checkAllCartSql, [userId], (err, allCartItems) => {
                 if (err) {
@@ -73,7 +72,7 @@ exports.prepareCartCheckout = (req, res) => {
             return res.status(400).json({ message: 'No items found for checkout' });
         }
 
-        // Check stock availability for all items
+        // checking stock
         const stockIssues = cartItems.filter(item => item.quantity > item.stock);
         if (stockIssues.length > 0) {
             const outOfStockItems = stockIssues.map(item => item.name);
@@ -84,7 +83,7 @@ exports.prepareCartCheckout = (req, res) => {
             });
         }
 
-        // Get user's address
+        // fetch user address
         const getUserAddressSql = `SELECT address FROM users WHERE id = ? LIMIT 1`;
         db.query(getUserAddressSql, [userId], (err, userRows) => {
             if (err) {
@@ -98,10 +97,10 @@ exports.prepareCartCheckout = (req, res) => {
                 ? userRows[0].address.trim() 
                 : null;
 
-            // Calculate total
+            // calculate total
             const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
 
-            // Format items for checkout display
+            // format
             const formattedItems = cartItems.map(item => ({
                 product_id: item.product_id,
                 name: item.name,
@@ -129,7 +128,7 @@ exports.prepareCartCheckout = (req, res) => {
     });
 };
 
-// 🌸 Solo checkout - Direct product checkout
+// solo checkout
 exports.prepareSoloCheckout = (req, res) => {
     console.log('prepareSoloCheckout - req.user:', req.user);
     
@@ -147,7 +146,7 @@ exports.prepareSoloCheckout = (req, res) => {
         return res.status(400).json({ message: 'Product ID is required' });
     }
 
-    // Get product details
+    // product details 
     const getProductSql = `
         SELECT id as product_id, name, price, image, stock
         FROM products 
@@ -166,12 +165,12 @@ exports.prepareSoloCheckout = (req, res) => {
 
         const product = products[0];
         
-        // Check stock
+        // check stock
         if (product.stock < 1) {
             return res.status(400).json({ message: 'Product is out of stock' });
         }
 
-        // Get user's address
+        // get address
         const getUserAddressSql = `SELECT address FROM users WHERE id = ? LIMIT 1`;
         db.query(getUserAddressSql, [userId], (err, userRows) => {
             if (err) {
@@ -183,13 +182,13 @@ exports.prepareSoloCheckout = (req, res) => {
                 ? userRows[0].address.trim() 
                 : null;
 
-            // Format item for checkout
+            // format
             const checkoutItem = {
                 product_id: product.product_id,
                 name: product.name,
                 price: product.price,
                 image: product.image,
-                quantity: 1, // Solo checkout is always quantity 1
+                quantity: 1, 
                 subtotal: product.price
             };
 

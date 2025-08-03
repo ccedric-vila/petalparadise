@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-// 🏠 Home page - Single product checkout preparation
+// single product checkout preparation
 exports.prepareSoloCheckout = (req, res) => {
     const userId = req.user?.id || req.user?.userId || req.userId;
     const { productId } = req.body;
@@ -9,7 +9,7 @@ exports.prepareSoloCheckout = (req, res) => {
         return res.status(400).json({ message: 'Product ID is required' });
     }
 
-    // Get product details for checkout display
+    // product details for checkout display
     const getProductSql = `
         SELECT id, name, price, image, stock, description 
         FROM products 
@@ -24,12 +24,12 @@ exports.prepareSoloCheckout = (req, res) => {
 
         const product = products[0];
         
-        // Check if product is in stock
+        // check if product is in stock
         if (product.stock < 1) {
             return res.status(400).json({ message: 'Product is out of stock' });
         }
 
-        // Get user's address for checkout display
+        // get user's address for checkout display
         const getUserAddressSql = `SELECT address FROM users WHERE id = ? LIMIT 1`;
         db.query(getUserAddressSql, [userId], (err, userRows) => {
             if (err) return res.status(500).json({ message: 'Could not load user address' });
@@ -38,14 +38,14 @@ exports.prepareSoloCheckout = (req, res) => {
                 ? userRows[0].address.trim() 
                 : null;
 
-            // Prepare checkout data for frontend
+            // prepare checkout data for frontend
             const checkoutData = {
                 items: [{
                     product_id: product.id,
                     name: product.name,
                     price: product.price,
                     image: product.image,
-                    quantity: 1, // Always 1 for solo checkout
+                    quantity: 1, 
                     subtotal: product.price
                 }],
                 userAddress: userAddress || 'No address found',

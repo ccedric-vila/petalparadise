@@ -4,14 +4,14 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-// Helper function to get user ID from different possible properties
+// 
 const getUserId = (user) => {
     return user.id || user.user_id || user.userId || user.sub;
 };
 
-// Get all orders with total amount and user details
+// get all orders with user & product info
 exports.getAllOrders = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -41,9 +41,9 @@ exports.getAllOrders = (req, res) => {
     });
 };
 
-// Accept order → status becomes 'Confirmed'
+// accept order → status becomes 'Confirmed'
 exports.acceptOrder = (req, res) => {
-    // Handle user ID if authentication is required
+
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -65,9 +65,9 @@ exports.acceptOrder = (req, res) => {
     });
 };
 
-// Update order status + send email + PDF if Confirmed or Delivered + subtract stock if Confirmed
+// update order status 
 exports.updateOrderStatus = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -88,7 +88,7 @@ exports.updateOrderStatus = (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        // If status is 'Confirmed', subtract stock
+        // confirm bawas stock
         if (status === 'Confirmed') {
             db.query(
                 `SELECT product_id, quantity FROM order_items WHERE order_id = ?`,
@@ -99,7 +99,7 @@ exports.updateOrderStatus = (req, res) => {
                         return res.status(500).json({ message: 'Status updated, but failed to update stock' });
                     }
 
-                    // Update stock for each product
+                    // update stock
                     orderItems.forEach(item => {
                         db.query(
                             'UPDATE products SET stock = stock - ? WHERE id = ?',
@@ -115,7 +115,7 @@ exports.updateOrderStatus = (req, res) => {
             );
         }
 
-        // Get user email & info
+        // email and info
         db.query(
             `SELECT u.email, u.name, o.id, o.created_at, o.shipping_address 
              FROM orders o JOIN users u ON o.user_id = u.id WHERE o.id = ?`,
@@ -156,7 +156,7 @@ exports.updateOrderStatus = (req, res) => {
                                 message: `Hello ${user.name},<br>Your order status has been updated to: <b>${status}</b>.`
                             };
 
-                            // Send receipt for both Confirmed and Delivered status
+                            // send resibo
                             if (status === 'Confirmed' || status === 'Delivered') {
                                 const receiptsDir = path.join(__dirname, '../receipts');
                                 if (!fs.existsSync(receiptsDir)) {
@@ -190,16 +190,16 @@ exports.updateOrderStatus = (req, res) => {
     });
 };
 
-// Helper: generate PDF with product names & total
+// generate pdf resibo
 async function generatePdfReceipt(order, items, totalAmount, filePath) {
     return new Promise((resolve, reject) => {
         const doc = new PDFDocument({ margin: 50 });
         const stream = fs.createWriteStream(filePath);
         doc.pipe(stream);
 
-        // Header
+        // header
         doc
-            .fillColor('#d6336c') // flower pink
+            .fillColor('#d6336c') 
             .fontSize(26)
             .text('Petal Paradise Receipt', { align: 'center' })
             .moveDown();
@@ -212,9 +212,9 @@ async function generatePdfReceipt(order, items, totalAmount, filePath) {
             .stroke()
             .moveDown(1);
 
-        // Order details
+        // order details
         doc
-            .fillColor('#333') // dark text
+            .fillColor('#333') 
             .fontSize(12)
             .text(`Order ID: ${order.id}`)
             .text(`Customer Name: ${order.name}`)
@@ -222,14 +222,14 @@ async function generatePdfReceipt(order, items, totalAmount, filePath) {
             .text(`Shipping Address: ${order.shipping_address}`)
             .moveDown();
 
-        // Products header
+        // products section
         doc
             .fillColor('#d6336c')
             .fontSize(16)
             .text('Products', { underline: true })
             .moveDown(0.5);
 
-        // Product list
+        // product list
         items.forEach((item, index) => {
             doc
                 .fillColor('#000')
@@ -241,7 +241,7 @@ async function generatePdfReceipt(order, items, totalAmount, filePath) {
 
         doc.moveDown(1);
 
-        // Total
+        // total
         doc
             .strokeColor('#e6a1b0')
             .lineWidth(1)
@@ -256,7 +256,7 @@ async function generatePdfReceipt(order, items, totalAmount, filePath) {
             .text(`Total Amount: ${totalAmount.toFixed(2)} pesos`, { align: 'right' })
             .moveDown(1);
 
-        // Footer / thank you note
+        // footer
         doc
             .fillColor('#d6336c')
             .fontSize(12)
@@ -298,7 +298,7 @@ exports.downloadOrdersPDF = (req, res) => {
             res.setHeader('Content-Disposition', 'attachment; filename=orders.pdf');
             doc.pipe(res);
 
-            // Title
+            // title
             doc
                 .fillColor('#6a1b9a')
                 .fontSize(20)
@@ -311,15 +311,15 @@ exports.downloadOrdersPDF = (req, res) => {
                 .text('Order List', { align: 'center' })
                 .moveDown(0.5);
 
-            // Separator
+            // separator
             doc.moveTo(40, doc.y).lineTo(550, doc.y).strokeColor('#ec407a').lineWidth(1.5).stroke().moveDown(0.3);
 
-            // Columns
+            // columns
             const colX = { id: 45, date: 90, customer: 180, status: 330, total: 400 };
             let currentY = doc.y + 5;
             const rowHeight = 14;
 
-            // Header row
+            // header row
             doc.fontSize(10).font('Courier-Bold').fillColor('#4a148c')
                 .text('ID', colX.id, currentY)
                 .text('Date', colX.date, currentY)
@@ -330,7 +330,7 @@ exports.downloadOrdersPDF = (req, res) => {
             currentY += rowHeight;
             doc.moveTo(40, currentY - 2).lineTo(550, currentY - 2).strokeColor('#b39ddb').lineWidth(1).stroke();
 
-            // Rows
+            // rows
             doc.font('Courier').fillColor('black');
             results.forEach((order, idx) => {
                 const rowY = currentY + idx * rowHeight;
@@ -347,7 +347,7 @@ exports.downloadOrdersPDF = (req, res) => {
                     .text(Number(order.total_amount).toFixed(2) + ' ', colX.total, rowY);
             });
 
-            // Footer
+            // footer
             const footerY = currentY + results.length * rowHeight + 10;
             doc.fontSize(9).fillColor('#999')
                 .text(`Generated on ${new Date().toLocaleString()}`, 40, footerY, { align: 'right' });

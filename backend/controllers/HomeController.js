@@ -1,7 +1,7 @@
 const connection = require('../config/db');
 
 exports.getHomeData = (req, res) => {
-    // Public: get products
+    // get products
     connection.query('SELECT * FROM products', (err, products) => {
         if (err) {
             console.error('Database error:', err);

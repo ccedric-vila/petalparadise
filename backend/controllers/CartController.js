@@ -1,22 +1,21 @@
-const db = require('../config/db'); // adjust path if needed
+const db = require('../config/db'); 
 
-// ➕ Add to cart
+// addtocart
 exports.addToCart = (req, res) => {
-    // Debug logging to see what's in req.user
+    
     console.log('req.user:', req.user);
     console.log('req.user.id:', req.user?.id);
     
-    // Try multiple possible user ID sources
     const userId = req.user?.id || req.user?.userId || req.userId;
     const { productId, quantity } = req.body;
 
-    // Validate userId exists
+    // validate
     if (!userId) {
         console.error('No user ID found in request. req.user:', req.user);
         return res.status(401).json({ message: 'User not authenticated properly' });
     }
 
-    // Validate productId exists
+    // validate
     if (!productId) {
         return res.status(400).json({ message: 'Product ID is required' });
     }
@@ -55,7 +54,7 @@ exports.addToCart = (req, res) => {
     });
 };
 
-// 🛒 Get cart items
+// get cart items
 exports.getCart = (req, res) => {
     const userId = req.user?.id || req.user?.userId || req.userId;
     
@@ -79,7 +78,7 @@ exports.getCart = (req, res) => {
     });
 };
 
-// 🗑 Remove item from cart
+// remove items cart
 exports.removeFromCart = (req, res) => {
     const userId = req.user?.id || req.user?.userId || req.userId;
     const cartItemId = req.params.id;
@@ -98,16 +97,16 @@ exports.removeFromCart = (req, res) => {
     });
 };
 
-// ➕ Increment quantity
+// add
 exports.incrementQuantity = (req, res) => {
-    const { id } = req.params; // id = cart_items.id
+    const { id } = req.params; // 
     const userId = req.user?.id || req.user?.userId || req.userId;
 
     if (!userId) {
         return res.status(401).json({ message: 'User not authenticated properly' });
     }
 
-    // Add user_id check for security
+    // add user id for security
     db.query('UPDATE cart_items SET quantity = quantity + 1 WHERE id = ? AND user_id = ?', [id, userId], (err, result) => {
         if (err) {
             console.error('Failed to increment:', err);
@@ -120,16 +119,16 @@ exports.incrementQuantity = (req, res) => {
     });
 };
 
-// ➖ Decrement quantity (won't go below 1)
+// bawas items
 exports.decrementQuantity = (req, res) => {
-    const { id } = req.params; // id = cart_items.id
+    const { id } = req.params; 
     const userId = req.user?.id || req.user?.userId || req.userId;
 
     if (!userId) {
         return res.status(401).json({ message: 'User not authenticated properly' });
     }
 
-    // Add user_id check for security
+    // add user id for security
     db.query('UPDATE cart_items SET quantity = quantity - 1 WHERE id = ? AND user_id = ? AND quantity > 1', [id, userId], (err, result) => {
         if (err) {
             console.error('Failed to decrement:', err);
@@ -142,7 +141,7 @@ exports.decrementQuantity = (req, res) => {
     });
 };
 
-// 📊 Get cart count (useful for frontend cart badge)
+// cartcount
 exports.getCartCount = (req, res) => {
     const userId = req.user?.id || req.user?.userId || req.userId;
     

@@ -1,11 +1,10 @@
 const db = require('../config/db');
 
-// ✅ Final checkout - Create order and process payment
+// final checkout
 exports.processFinalCheckout = (req, res) => {
-    // Debug logging to see what's in req.user
+    
     console.log('processFinalCheckout - req.user:', req.user);
     
-    // Try multiple possible user ID sources
     const userId = req.user?.id || req.user?.userId || req.userId;
     const { checkoutData, paymentMethod, shippingAddress } = req.body;
 
@@ -13,18 +12,18 @@ exports.processFinalCheckout = (req, res) => {
     console.log('processFinalCheckout - shippingAddress provided:', shippingAddress);
     console.log('processFinalCheckout - checkoutData:', checkoutData);
 
-    // Validate userId exists
+    // validate
     if (!userId) {
         console.error('No user ID found in processFinalCheckout. req.user:', req.user);
         return res.status(401).json({ message: 'User not authenticated properly' });
     }
 
-    // Validate required data
+    // validate chckoutdata
     if (!checkoutData || !checkoutData.items || checkoutData.items.length === 0) {
         return res.status(400).json({ message: 'Checkout data is required' });
     }   
 
-    // Use provided shipping address or get from user profile
+    // use address fetch from user profile
     let finalShippingAddress = shippingAddress;
     
     if (!finalShippingAddress) {
@@ -60,19 +59,19 @@ exports.processFinalCheckout = (req, res) => {
     function createOrder() {
         console.log('Creating order with address:', finalShippingAddress);
         
-        // Start transaction
+        // start transaction
         db.beginTransaction((err) => {
             if (err) {
                 console.error('Transaction failed to start:', err);
                 return res.status(500).json({ message: 'Transaction failed to start' });
             }
 
-            // Calculate total amount using product prices with JOIN
+            // calculate total amount
             let calculateTotalSql;
             let calculateTotalParams;
 
             if (checkoutData.checkoutType === 'cart') {
-                // For cart checkout, get data from cart_items table with JOIN
+                // cart checkout
                 if (checkoutData.selectedItems === 'all') {
                     calculateTotalSql = `
                         SELECT 
@@ -99,7 +98,7 @@ exports.processFinalCheckout = (req, res) => {
                     calculateTotalParams = [userId, ...checkoutData.selectedItems];
                 }
             } else {
-                // For solo checkout, use the provided items data
+                // solo checkout
                 const productIds = checkoutData.items.map(item => item.product_id);
                 calculateTotalSql = `
                     SELECT 
@@ -124,16 +123,16 @@ exports.processFinalCheckout = (req, res) => {
 
                 console.log('Price calculation results:', priceResults);
 
-                // Calculate the actual total amount
+                // calculate total amount
                 let totalAmount = 0;
 
                 if (checkoutData.checkoutType === 'cart') {
-                    // For cart checkout, use the summed quantities from the query
+                    // cart checkout, use the summed quantities from the query
                     priceResults.forEach(product => {
                         totalAmount += parseFloat(product.price) * parseInt(product.total_quantity);
                     });
                 } else {
-                    // For solo checkout, use the provided quantities
+                    // solo checkout, use the provided quantities
                     const itemMap = {};
                     checkoutData.items.forEach(item => {
                         if (itemMap[item.product_id]) {
@@ -151,7 +150,7 @@ exports.processFinalCheckout = (req, res) => {
 
                 console.log('Calculated total amount:', totalAmount);
 
-                // Create the order with calculated total
+                // create the order with calculated total
                 const createOrderSql = `
                     INSERT INTO orders (user_id, total_amount, shipping_address, status, created_at, updated_at) 
                     VALUES (?, ?, ?, 'Pending', NOW(), NOW())
@@ -170,7 +169,7 @@ exports.processFinalCheckout = (req, res) => {
                     const orderId = orderResult.insertId;
                     console.log('Order created with ID:', orderId);
 
-                    // Prepare order items for batch insert (without price)
+                    // prepare order items for batch insert (without price)
                     const orderItemsValues = checkoutData.items.map(item => [
                         orderId,
                         item.product_id,
@@ -181,7 +180,7 @@ exports.processFinalCheckout = (req, res) => {
 
                     console.log('Order items values:', orderItemsValues);
 
-                    // Insert order items (without price field)
+                    // insert order items
                     const insertOrderItemsSql = `
                         INSERT INTO order_items (order_id, product_id, quantity, created_at, updated_at) 
                         VALUES ?
@@ -197,7 +196,7 @@ exports.processFinalCheckout = (req, res) => {
 
                         console.log('Order items created successfully');
 
-                        // If cart checkout, clear the cart items
+                        // art checkout, clear the cart items
                         if (checkoutData.checkoutType === 'cart') {
                             const clearCartSql = checkoutData.selectedItems === 'all' 
                                 ? 'DELETE FROM cart_items WHERE user_id = ?'
@@ -213,7 +212,7 @@ exports.processFinalCheckout = (req, res) => {
                             db.query(clearCartSql, clearCartParams, (err) => {
                                 if (err) {
                                     console.error('Failed to clear cart:', err);
-                                    // Don't fail the transaction, just log it
+                                    // 
                                 }
 
                                 // Commit transaction
@@ -235,7 +234,7 @@ exports.processFinalCheckout = (req, res) => {
                                 });
                             });
                         } else {
-                            // Solo checkout - no cart to clear
+                            // 
                             db.commit((err) => {
                                 if (err) {
                                     console.error('Failed to commit transaction:', err);
@@ -260,7 +259,7 @@ exports.processFinalCheckout = (req, res) => {
     }
 };
 
-// Helper function to validate shipping address
+// helper function to validate shipping address
 exports.validateShippingAddress = (req, res) => {
     const userId = req.user?.id || req.user?.userId || req.userId;
     

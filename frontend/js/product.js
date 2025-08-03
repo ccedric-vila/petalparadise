@@ -5,22 +5,19 @@ $(document).ready(function () {
     const supplierApi = 'http://localhost:4000/api/v1/supplier';
     const pdfDownloadUrl = 'http://localhost:4000/api/v1/download/pdf';
 
-    
-
     if (!token || !userId) {
         sessionStorage.clear();
         window.location.href = "/frontend/Userhandling/login.html";
         return;
     }
 
-    // Auth check + data load
     $.ajax({
         method: "GET",
         url: `http://localhost:4000/api/v1/profile/${userId}`,
         headers: { 'Authorization': `Bearer ${token}` },
         success: function (res) {
     if (res.user.role !== 'admin') {
-        // Show authorization message before redirecting
+        
         Swal.fire({
             title: "Access Denied",
             text: "You do not have admin privileges to access the product management page. This area is restricted to administrators only.",
@@ -35,7 +32,7 @@ $(document).ready(function () {
     loadProducts();
     loadSuppliers();
 
-            // Insert filter dropdowns above the table
+            
         const filterHTML = `
             <div id="filterContainer" style="margin: 10px 0; text-align: center; font-family: 'Poppins', sans-serif;">
                 <select id="categoryFilter" style="padding:6px 12px; border:1px solid #ccc; border-radius:20px; margin:0 5px;">
@@ -68,7 +65,7 @@ $(document).ready(function () {
         }
     });
 
-    // jQuery Validation Setup
+    // jQuery Validation 
     $.validator.addMethod("currency", function(value, element) {
         return this.optional(element) || /^\d+(\.\d{1,2})?$/.test(value);
     }, "Please enter a valid price (e.g., 10.50)");
@@ -77,7 +74,7 @@ $(document).ready(function () {
         return this.optional(element) || (Number.isInteger(Number(value)) && Number(value) >= 0);
     }, "Please enter a valid non-negative number");
 
-    // Initialize form validation
+    //  form validation
     $("#productForm").validate({
         rules: {
             name: {
@@ -220,7 +217,7 @@ function loadSuppliers(selectedSupplierId = null) {
     $('#productForm').submit(function (e) {
         e.preventDefault();
         
-        // Check if form is valid before submitting
+        
         if (!$(this).valid()) {
             return false;
         }
@@ -241,9 +238,9 @@ function loadSuppliers(selectedSupplierId = null) {
                 $('#productForm')[0].reset();
                 $('#productId').val('');
                 $('#submitBtn').text('Add Product');
-                // Clear existing images display
+               
                 $('#currentImages').remove();
-                // Hide form and show add button after successful submission
+                
                 $('#formContainer').hide();
                 $('#showFormBtn').show();
                 loadProducts();
@@ -268,7 +265,7 @@ function loadSuppliers(selectedSupplierId = null) {
         
         console.log('Edit button clicked for product ID:', productId);
         
-        // First, load the product data
+     
         $.ajax({
             url: `${productApi}/${productId}`,
             method: 'GET',
@@ -276,19 +273,19 @@ function loadSuppliers(selectedSupplierId = null) {
             success: function (product) {
                 console.log('Product data loaded:', product);
                 
-                // SHOW FORM AFTER data is loaded
+                
                 $("#formContainer").show();
                 $("#showFormBtn").hide();
                 
-                // Reset form first
+              
                 $("#productForm")[0].reset();
                 
-                // Clear any existing validation errors
+               
                 $("#productForm").validate().resetForm();
                 $('.error-input').removeClass('error-input');
                 $('.error-message').remove();
                 
-                // Populate form fields
+                
                 $('#productId').val(product.id);
                 $('#name').val(product.name);
                 $('#category').val(product.category);
@@ -297,15 +294,15 @@ function loadSuppliers(selectedSupplierId = null) {
                 $('#color').val(product.color);
                 $('#stock').val(product.stock);
                 
-                // Debug and set usage_type
+                
                 console.log('Product usage_type from API:', product.usage_type);
                 console.log('Available usage_type options:', $('#usage_type option').map(function() { return this.value; }).get());
                 
-                // Try to set usage_type with different approaches
+                
                 if (product.usage_type) {
                     $('#usage_type').val(product.usage_type);
                     
-                    // If that didn't work, try finding by text content
+                    
                     if ($('#usage_type').val() !== product.usage_type) {
                         $('#usage_type option').each(function() {
                             if ($(this).text().toLowerCase() === product.usage_type.toLowerCase() || 
@@ -319,16 +316,15 @@ function loadSuppliers(selectedSupplierId = null) {
                 
                 console.log('Final usage_type value set:', $('#usage_type').val());
                 
-                // Change button text
                 $('#submitBtn').text('Update Product');
                 
-                // Load suppliers with the selected one
+               
                 loadSuppliers(product.supplier_id);
                 
-                // Display existing images
+               
                 displayExistingImages(product.images || []);
                 
-                // Scroll to form
+               
                 $('html, body').animate({ scrollTop: $('#productForm').offset().top }, 500);
             },
             error: function (err) {
@@ -338,9 +334,9 @@ function loadSuppliers(selectedSupplierId = null) {
         });
     });
 
-    // Function to display existing images in edit mode
+    
     function displayExistingImages(images) {
-        // Remove any existing image display
+        
         $('#currentImages').remove();
         
         if (images && images.length > 0) {
@@ -357,7 +353,7 @@ function loadSuppliers(selectedSupplierId = null) {
             
             imageHTML += '</div><small style="color: #666;">Upload new images to replace these</small></div>';
             
-            // Insert after the file input
+         
             $('#images').after(imageHTML);
         }
     }
@@ -380,7 +376,7 @@ function loadSuppliers(selectedSupplierId = null) {
         });
     });
 
-    // Image slider navigation
+ 
     $(document).on('click', '.next-btn, .prev-btn', function () {
         const $slider = $(this).closest('.image-slider');
         const images = JSON.parse($slider.attr('data-images'));

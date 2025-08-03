@@ -7,11 +7,10 @@ const role = sessionStorage.getItem('role');
         sessionStorage.clear();
         return window.location.href = "/frontend/Userhandling/login.html";
     }
-    let editOrderId = null; // Changed from editOrderItemId to editOrderId
-    
-    // Load order history
+    let editOrderId = null; 
+
     function loadOrderHistory() {
-        // Show loading indicator
+        
         $('#loadingIndicator').show();
         
         $.ajax({
@@ -19,7 +18,7 @@ const role = sessionStorage.getItem('role');
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` },
             success: function(res) {
-                console.log('Order history loaded:', res); // Debug log
+                console.log('Order history loaded:', res); 
                 $('#loadingIndicator').hide();
                 
                 if (res.orders && res.orders.length > 0) {
@@ -41,7 +40,7 @@ const role = sessionStorage.getItem('role');
         });
     }
 
-    // Display order history in the page
+    
     function displayOrderHistory(orders) {
         const historyHtml = orders.map(order => `
             <div class="order-card">
@@ -85,26 +84,24 @@ const role = sessionStorage.getItem('role');
 
         $('#orderHistoryContainer').html(historyHtml);
 
-        // Add click handler for review buttons
+        
         $('.btn-review').on('click', function() {
             const orderId = $(this).data('order-id');
-            console.log('Opening review modal for order:', orderId); // Debug log
+            console.log('Opening review modal for order:', orderId); 
             editOrderId = orderId;
             $('#reviewModal').modal('show');
             loadMyReview(orderId);
         });
 
-        // Add click handler for update review buttons
         $('.btn-update-review').on('click', function() {
             const orderId = $(this).data('order-id');
-            console.log('Opening update review modal for order:', orderId); // Debug log
+            console.log('Opening update review modal for order:', orderId); 
             editOrderId = orderId;
             $('#reviewModal').modal('show');
             loadMyReview(orderId);
         });
     }
 
-    // Helper function to get review button based on order status and review existence
     function getReviewButton(order) {
         if (order.status === 'Delivered') {
             if (order.review) {
@@ -113,10 +110,10 @@ const role = sessionStorage.getItem('role');
                 return `<button class="btn btn-sm btn-review ms-2" data-order-id="${order.order_id}">Review</button>`;
             }
         }
-        return ''; // No button for non-delivered orders
+        return ''; 
     }
 
-    // Helper function for status colors
+    
     function getStatusColor(status) {
         switch(status.toLowerCase()) {
             case 'delivered': return 'success';
@@ -126,25 +123,25 @@ const role = sessionStorage.getItem('role');
         }
     }
 
-    // Load review for a specific order (changed from order item to order)
+    
     function loadMyReview(orderId) {
-        console.log('Loading review for order:', orderId); // Debug log
+        console.log('Loading review for order:', orderId); 
         
         $.ajax({
-            url: `http://localhost:4000/api/v1/reviews/item/${orderId}`, // Keep same URL to avoid route changes
+            url: `http://localhost:4000/api/v1/reviews/item/${orderId}`,
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` },
             success: function(res) {
-                console.log('Review data:', res); // Debug log
+                console.log('Review data:', res); 
                 if (res.review) {
                     $('#rating').val(res.review.rating);
                     $('#comment').val(res.review.comment);
-                    $('#deleteReviewBtn').removeClass('d-none'); // Show delete button
+                    $('#deleteReviewBtn').removeClass('d-none'); 
                     editOrderId = orderId;
                 } else {
-                    $('#rating').val(5); // Default rating
+                    $('#rating').val(5); 
                     $('#comment').val('');
-                    $('#deleteReviewBtn').addClass('d-none'); // Hide delete button
+                    $('#deleteReviewBtn').addClass('d-none'); 
                     editOrderId = orderId;
                 }
             },
@@ -157,13 +154,13 @@ const role = sessionStorage.getItem('role');
         });
     }
 
-    // Save review button click handler
+    
     $('#saveReviewBtn').on('click', function() {
         const orderId = editOrderId;
         const rating = $('#rating').val();
         const comment = $('#comment').val();
 
-        console.log('Saving review:', { orderId, rating, comment }); // Debug log
+        console.log('Saving review:', { orderId, rating, comment }); 
 
         $.ajax({
             url: 'http://localhost:4000/api/v1/reviews',
@@ -173,15 +170,15 @@ const role = sessionStorage.getItem('role');
                 'Content-Type': 'application/json'
             },
             data: JSON.stringify({ 
-                order_item_id: Number(orderId), // Keep same field name to avoid backend changes
+                order_item_id: Number(orderId), 
                 rating: Number(rating), 
                 comment 
             }),
             success: function(res) {
-                console.log('Review saved:', res); // Debug log
+                console.log('Review saved:', res); 
                 alert('Review saved successfully!');
                 $('#reviewModal').modal('hide');
-                loadOrderHistory(); // Refresh history to show updated review
+                loadOrderHistory(); 
             },
             error: function(xhr, status, error) {
                 console.error('Failed to save review:', xhr.responseJSON || error);
@@ -190,21 +187,21 @@ const role = sessionStorage.getItem('role');
         });
     });
 
-    // Delete review button click handler
+    
     $('#deleteReviewBtn').on('click', function() {
         if (!confirm('Are you sure you want to delete this review?')) return;
         
         const orderId = editOrderId;
         
         $.ajax({
-            url: `http://localhost:4000/api/v1/reviews/${orderId}`, // Keep same URL pattern
+            url: `http://localhost:4000/api/v1/reviews/${orderId}`, 
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` },
             success: function(res) {
-                console.log('Review deleted:', res); // Debug log
+                console.log('Review deleted:', res); 
                 alert('Review deleted successfully!');
                 $('#reviewModal').modal('hide');
-                loadOrderHistory(); // Refresh history
+                loadOrderHistory(); 
             },
             error: function(xhr, status, error) {
                 console.error('Failed to delete review:', xhr.responseJSON || error);
@@ -213,11 +210,11 @@ const role = sessionStorage.getItem('role');
         });
     });
 
-    // Back to Home handler
+    
     $('#backToHomeBtn').on('click', function() {
         window.location.href = "/frontend/Userhandling/home.html";
     });
 
-    // Initial load
+    
     loadOrderHistory();
 });

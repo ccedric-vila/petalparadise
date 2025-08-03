@@ -2,13 +2,12 @@ $(document).ready(function () {
     const token = sessionStorage.getItem('token');
     const userId = sessionStorage.getItem('userId');
     const pdfDownloadUrl = 'http://localhost:4000/api/v1/orders/download/pdf';
-    let allOrders = []; // ✅ store all loaded orders for filtering
+    let allOrders = []; 
 
     if (!token || !userId) {
         return window.location.href = "/frontend/Userhandling/login.html";
     }
 
-    // ✅ Verify admin
     $.ajax({
         method: "GET",
         url: `http://localhost:4000/api/v1/profile/${userId}`,
@@ -20,7 +19,6 @@ $(document).ready(function () {
                 return window.location.href = "/frontend/Userhandling/login.html";
             }
 
-            // ✅ If admin, load orders
             loadOrders();
         },
         error: function (err) {
@@ -36,7 +34,7 @@ $(document).ready(function () {
             method: 'GET',
             headers: { 'Authorization': `Bearer ${token}` },
             success: function (orders) {
-                allOrders = orders; // ✅ save for filtering
+                allOrders = orders; 
                 renderOrders(allOrders);
             },
             error: function (err) {
@@ -46,7 +44,7 @@ $(document).ready(function () {
         });
     }
 
-    // ✅ Separate function to render table rows
+ 
     function renderOrders(orders) {
         let rows = '';
         orders.forEach((order, index) => {
@@ -67,7 +65,6 @@ $(document).ready(function () {
         $('#orderTable tbody').html(rows);
     }
 
-    // Generate action buttons based on order status
     function getActionButtons(status, orderId) {
         switch (status) {
             case 'Pending':
@@ -94,21 +91,21 @@ $(document).ready(function () {
         }
     }
 
-    // Handle action button clicks
+  
     $(document).on('click', '.btn-confirm, .btn-cancel, .btn-delivery, .btn-delivered', function () {
         const orderId = $(this).data('id');
         const action = $(this).data('action');
         const buttonText = $(this).text();
 
-        // Confirm action
+        
         if (confirm(`Are you sure you want to ${buttonText.toLowerCase()} this order?`)) {
             updateOrderStatus(orderId, action, buttonText);
         }
     });
 
-    // Update order status
+    
     function updateOrderStatus(orderId, status, actionName) {
-        // Show loading state
+        
         const $button = $(`[data-id="${orderId}"][data-action="${status}"]`);
         const originalText = $button.text();
         $button.text('Processing...').prop('disabled', true);
@@ -121,12 +118,12 @@ $(document).ready(function () {
             data: JSON.stringify({ status }),
             success: function () {
                 alert(`Order ${actionName.toLowerCase()}ed successfully!`);
-                loadOrders(); // Reload the table
+                loadOrders(); 
             },
             error: function (err) {
                 console.error(`Failed to ${actionName.toLowerCase()} order:`, err);
                 alert(`Failed to ${actionName.toLowerCase()} order`);
-                // Restore button state
+                
                 $button.text(originalText).prop('disabled', false);
             }
         });
@@ -157,7 +154,7 @@ $(document).ready(function () {
         });
     });
 
-    // ✅ Status filter handler
+    
     $('#statusFilter').on('change', function () {
         const selectedStatus = $('#statusFilter').val();
 

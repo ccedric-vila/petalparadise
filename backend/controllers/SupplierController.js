@@ -1,13 +1,12 @@
 const connection = require('../config/db');
 const PDFDocument = require('pdfkit');
 
-// Helper function to get user ID from different possible properties
 const getUserId = (user) => {
     return user.id || user.user_id || user.userId || user.sub;
 };
 
 exports.createSupplier = (req, res) => {
-    // Handle user ID if authentication is required
+  
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -28,7 +27,7 @@ exports.createSupplier = (req, res) => {
 };
 
 exports.getSuppliers = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -43,7 +42,7 @@ exports.getSuppliers = (req, res) => {
 };
 
 exports.getSupplierById = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -60,7 +59,7 @@ exports.getSupplierById = (req, res) => {
 };
 
 exports.updateSupplier = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -80,7 +79,7 @@ exports.updateSupplier = (req, res) => {
 };
 
 exports.deleteSupplier = (req, res) => {
-    // Handle user ID if authentication is required
+    
     if (req.user) {
         const userId = getUserId(req.user);
         if (!userId) {
@@ -110,7 +109,7 @@ exports.downloadSupplierPDF = (req, res) => {
 
         doc.pipe(res);
 
-        // Title
+        
         doc
             .fillColor('#6a1b9a')
             .fontSize(20)
@@ -123,33 +122,33 @@ exports.downloadSupplierPDF = (req, res) => {
             .text('Supplier List', { align: 'center' })
             .moveDown(0.5);
 
-        // Separator
+        
         doc.moveTo(40, doc.y).lineTo(550, doc.y).strokeColor('#ec407a').lineWidth(1.5).stroke().moveDown(0.3);
 
-        // Column positions (adjusted without phone)
+        
         const colX = { id: 45, name: 100, email: 250, address: 420 };
 
         let currentY = doc.y + 5;
         const rowHeight = 14;
 
-        // Header
+       
         doc.fontSize(10).font('Courier-Bold').fillColor('#4a148c')
             .text('ID', colX.id, currentY)
             .text('Name', colX.name, currentY)
             .text('Email', colX.email, currentY)
             .text('Address', colX.address, currentY);
 
-        // Line under header
+        
         currentY += rowHeight;
         doc.moveTo(40, currentY - 2).lineTo(550, currentY - 2).strokeColor('#b39ddb').lineWidth(1).stroke();
 
-        // Rows
+        
         doc.font('Courier').fillColor('black');
 
         results.forEach((supplier, idx) => {
             const rowY = currentY + idx * rowHeight;
 
-            // Alternate background
+           
             if (idx % 2 === 0) {
                 doc.rect(40, rowY - 2, 510, rowHeight).fill('#f3e5f5').fillColor('black');
             }
@@ -161,7 +160,7 @@ exports.downloadSupplierPDF = (req, res) => {
                 .text(supplier.address ? (supplier.address.length > 18 ? supplier.address.substring(0, 18) + '…' : supplier.address) : '-', colX.address, rowY);
         });
 
-        // Footer
+        
         const footerY = currentY + results.length * rowHeight + 10;
         doc.fontSize(9).fillColor('#999').text(`Generated on ${new Date().toLocaleString()}`, 40, footerY, { align: 'right' });
 

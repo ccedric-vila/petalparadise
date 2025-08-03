@@ -1,13 +1,13 @@
 const connection = require('../config/db');
 const PDFDocument = require('pdfkit');
 
-// Helper function to get user ID from different possible properties
+// Helper function to get user ID 
 const getUserId = (user) => {
     return user.id || user.user_id || user.userId || user.sub;
 };
 
 exports.createProduct = (req, res) => {
-    // Debug: Log req.user if authentication is required for this endpoint
+    
     if (req.user) {
         console.log('req.user object:', req.user);
         const userId = getUserId(req.user);
@@ -19,17 +19,17 @@ exports.createProduct = (req, res) => {
         price, color, stock, supplier_id
     } = req.body;
 
-    // Validate required fields
+    // validate
     if (!name || !category || !price) {
         return res.status(400).json({ 
             error: 'Missing required fields: name, category, and price are required' 
         });
     }
 
-    // Handle both single and multiple images
+    // multiple or solo images
     let imageValue = null;
     if (req.files) {
-        // Combine all images into a comma-separated string
+        
         const allFiles = [
             ...(req.files.image || []),
             ...(req.files.images || [])
@@ -49,14 +49,14 @@ exports.createProduct = (req, res) => {
         category, 
         usage_type, 
         description,
-        parseFloat(price), // Ensure price is a number
+        parseFloat(price), 
         color, 
-        parseInt(stock) || 0, // Ensure stock is a number, default to 0
-        imageValue, // Will be string like "img1.jpg,img2.jpg,img3.jpg"
-        supplier_id ? parseInt(supplier_id) : null // Handle null supplier_id
+        parseInt(stock) || 0, 
+        imageValue, 
+        supplier_id ? parseInt(supplier_id) : null 
     ];
 
-    console.log('SQL params:', params); // Debug log
+    console.log('SQL params:', params); 
 
     connection.query(sql, params, (err, result) => {
         if (err) {
@@ -67,7 +67,7 @@ exports.createProduct = (req, res) => {
             });
         }
         
-        console.log('Product created with ID:', result.insertId); // Debug log
+        console.log('Product created with ID:', result.insertId); 
         
         res.status(201).json({ 
             message: 'Product added successfully', 
@@ -78,7 +78,7 @@ exports.createProduct = (req, res) => {
 };
 
 exports.getProducts = (req, res) => {
-    // Debug: Log req.user if authentication is required
+    
     if (req.user) {
         console.log('req.user object:', req.user);
         const userId = getUserId(req.user);
@@ -92,7 +92,7 @@ exports.getProducts = (req, res) => {
         ORDER BY p.id DESC
     `;
     
-    console.log('Executing getProducts query'); // Debug log
+    console.log('Executing getProducts query'); 
     
     connection.query(sql, (err, results) => {
         if (err) {
@@ -100,9 +100,9 @@ exports.getProducts = (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         
-        console.log('Found products:', results.length); // Debug log
+        console.log('Found products:', results.length); 
         
-        // Process images for each product
+        
         const processedResults = results.map(product => {
             if (product.image && product.image.trim() !== '') {
                 product.images = product.image.split(',').filter(img => img.trim() !== '');
@@ -119,19 +119,19 @@ exports.getProducts = (req, res) => {
 exports.getProductById = (req, res) => {
     const { id } = req.params;
     
-    // Validate ID parameter
+    // Validate 
     if (!id || isNaN(parseInt(id))) {
         return res.status(400).json({ message: 'Invalid product ID' });
     }
     
-    // Debug: Log req.user if authentication is required
+    
     if (req.user) {
         console.log('req.user object:', req.user);
         const userId = getUserId(req.user);
         console.log('Extracted userId:', userId);
     }
     
-    console.log('Getting product by ID:', id); // Debug log
+    console.log('Getting product by ID:', id); 
     
     connection.query('SELECT * FROM products WHERE id = ?', [parseInt(id)], (err, results) => {
         if (err) {
@@ -140,11 +140,11 @@ exports.getProductById = (req, res) => {
         }
         
         if (results.length === 0) {
-            console.log('Product not found for ID:', id); // Debug log
+            console.log('Product not found for ID:', id); 
             return res.status(404).json({ message: 'Product not found' });
         }
         
-        // Convert comma-separated images to array
+        
         const product = results[0];
         if (product.image && product.image.trim() !== '') {
             product.images = product.image.split(',').filter(img => img.trim() !== '');
@@ -152,7 +152,7 @@ exports.getProductById = (req, res) => {
             product.images = [];
         }
         
-        console.log('Product found:', { id: product.id, name: product.name }); // Debug log
+        console.log('Product found:', { id: product.id, name: product.name }); 
         res.json(product);
     });
 };
@@ -160,12 +160,12 @@ exports.getProductById = (req, res) => {
 exports.updateProduct = (req, res) => {
     const { id } = req.params;
     
-    // Validate ID parameter
+    // Validate 
     if (!id || isNaN(parseInt(id))) {
         return res.status(400).json({ message: 'Invalid product ID' });
     }
     
-    // Debug: Log req.user if authentication is required
+    
     if (req.user) {
         console.log('req.user object:', req.user);
         const userId = getUserId(req.user);
@@ -177,7 +177,7 @@ exports.updateProduct = (req, res) => {
         price, color, stock, supplier_id
     } = req.body;
 
-    // Validate required fields
+    // Validate 
     if (!name || !category || !price) {
         return res.status(400).json({ 
             error: 'Missing required fields: name, category, and price are required' 
@@ -193,15 +193,15 @@ exports.updateProduct = (req, res) => {
         category, 
         usage_type, 
         description,
-        parseFloat(price), // Ensure price is a number
+        parseFloat(price), 
         color, 
-        parseInt(stock) || 0, // Ensure stock is a number
-        supplier_id ? parseInt(supplier_id) : null // Handle null supplier_id
+        parseInt(stock) || 0, 
+        supplier_id ? parseInt(supplier_id) : null 
     ];
 
-    // Handle image updates
+    // 
     if (req.files) {
-        // Combine new images
+        
         const allFiles = [
             ...(req.files.image || []),
             ...(req.files.images || [])
@@ -209,13 +209,13 @@ exports.updateProduct = (req, res) => {
         const newImages = allFiles.map(file => file.filename).join(',');
         sql += `, image = ?`;
         params.push(newImages);
-        console.log('Updating with new images:', newImages); // Debug log
+        console.log('Updating with new images:', newImages); 
     }
 
     sql += ` WHERE id = ?`;
     params.push(parseInt(id));
 
-    console.log('Update SQL params:', params); // Debug log
+    console.log('Update SQL params:', params); 
 
     connection.query(sql, params, (err, result) => {
         if (err) {
@@ -227,11 +227,11 @@ exports.updateProduct = (req, res) => {
         }
         
         if (result.affectedRows === 0) {
-            console.log('No product found to update for ID:', id); // Debug log
+            console.log('No product found to update for ID:', id); 
             return res.status(404).json({ message: 'Product not found' });
         }
         
-        console.log('Product updated successfully for ID:', id); // Debug log
+        console.log('Product updated successfully for ID:', id); 
         res.json({ message: 'Product updated successfully' });
     });
 };
@@ -239,19 +239,18 @@ exports.updateProduct = (req, res) => {
 exports.deleteProduct = (req, res) => {
     const { id } = req.params;
     
-    // Validate ID parameter
+    // Validate 
     if (!id || isNaN(parseInt(id))) {
         return res.status(400).json({ message: 'Invalid product ID' });
     }
-    
-    // Debug: Log req.user if authentication is required
+
     if (req.user) {
         console.log('req.user object:', req.user);
         const userId = getUserId(req.user);
         console.log('Extracted userId:', userId);
     }
     
-    console.log('Deleting product with ID:', id); // Debug log
+    console.log('Deleting product with ID:', id); 
     
     connection.query('DELETE FROM products WHERE id = ?', [parseInt(id)], (err, result) => {
         if (err) {
@@ -260,11 +259,11 @@ exports.deleteProduct = (req, res) => {
         }
         
         if (result.affectedRows === 0) {
-            console.log('No product found to delete for ID:', id); // Debug log
+            console.log('No product found to delete for ID:', id); 
             return res.status(404).json({ message: 'Product not found' });
         }
         
-        console.log('Product deleted successfully for ID:', id); // Debug log
+        console.log('Product deleted successfully for ID:', id); 
         res.json({ message: 'Product deleted successfully' });
     });
 };
@@ -283,7 +282,7 @@ exports.downloadPDF = (req, res) => {
 
         doc.pipe(res);
 
-        // Title
+        // title
         doc
             .fillColor('#6a1b9a')
             .fontSize(20)
@@ -296,17 +295,17 @@ exports.downloadPDF = (req, res) => {
             .text('Product List', { align: 'center' })
             .moveDown(0.5);
 
-        // Separator
+        // separator
         doc.moveTo(40, doc.y).lineTo(550, doc.y).strokeColor('#ec407a').lineWidth(1.5).stroke().moveDown(0.3);
 
-        // Column positions
+        // column positions
         const colX = { id: 45, name: 75, category: 235, usage: 310, price: 380, stock: 440 };
 
-        // Header row Y position
+        // header row Y position
         let currentY = doc.y + 5;
         const rowHeight = 14;
 
-        // Header
+        // header
         doc.fontSize(10).font('Courier-Bold').fillColor('#4a148c')
             .text('ID', colX.id, currentY)
             .text('Name', colX.name, currentY)
@@ -315,17 +314,17 @@ exports.downloadPDF = (req, res) => {
             .text('Price', colX.price, currentY, { width: 50, align: 'right' })
             .text('Stock', colX.stock, currentY, { width: 40, align: 'right' });
 
-        // Line under header
+        // line under header
         currentY += rowHeight;
         doc.moveTo(40, currentY - 2).lineTo(550, currentY - 2).strokeColor('#b39ddb').lineWidth(1).stroke();
 
-        // Rows
+        // rows
         doc.font('Courier').fillColor('black');
 
         results.forEach((prod, idx) => {
             const rowY = currentY + idx * rowHeight;
 
-            // Alternate background
+            // alternate background
             if (idx % 2 === 0) {
                 doc.rect(40, rowY - 2, 510, rowHeight).fill('#f3e5f5').fillColor('black');
             }
@@ -339,7 +338,7 @@ exports.downloadPDF = (req, res) => {
                 .text(prod.stock.toString(), colX.stock + 40 - doc.widthOfString(prod.stock.toString()), rowY);
         });
 
-        // Footer
+        // footer
         const footerY = currentY + results.length * rowHeight + 10;
         doc.fontSize(9).fillColor('#999').text(`Generated on ${new Date().toLocaleString()}`, 40, footerY, { align: 'right' });
 

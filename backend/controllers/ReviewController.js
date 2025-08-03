@@ -1,25 +1,25 @@
 const db = require('../config/db');
 
-// Helper function to get user ID from different possible properties
+
 const getUserId = (user) => {
     return user.id || user.user_id || user.userId || user.sub;
 };
 
-// 📋 Get order history for user (modified to use order_id for reviews)
+
 exports.getOrderHistory = (req, res) => {
-    // Debug: Log the entire req.user object
+  
     console.log('req.user object:', req.user);
     
     const userId = getUserId(req.user);
     
-    // Debug: Log the extracted userId
+
     console.log('Extracted userId:', userId);
     
     if (!userId) {
         console.error('No user ID found in token');
         return res.status(400).json({ 
             message: 'User ID not found in token',
-            debug: req.user // Remove this in production
+            debug: req.user 
         });
     }
 
@@ -52,9 +52,9 @@ exports.getOrderHistory = (req, res) => {
             return res.status(500).json({ message: 'Failed to load order history' });
         }
 
-        console.log('Query results:', results); // Debug log
+        console.log('Query results:', results); 
 
-        // Group results by order
+        
         const ordersMap = {};
         
         results.forEach(row => {
@@ -86,12 +86,12 @@ exports.getOrderHistory = (req, res) => {
         });
 
         const orders = Object.values(ordersMap);
-        console.log('Processed orders:', orders); // Debug log
+        console.log('Processed orders:', orders); 
         res.json({ orders });
     });
 };
 
-// 📝 Get order details by order ID (for orders with 2+ products)
+
 exports.getOrderDetails = (req, res) => {
     const userId = getUserId(req.user);
     
@@ -139,7 +139,7 @@ exports.getOrderDetails = (req, res) => {
             items: []
         };
 
-        // Fetch individual items for the order
+        
         const itemsSql = `
             SELECT 
                 oi.id AS order_item_id,
@@ -165,7 +165,7 @@ exports.getOrderDetails = (req, res) => {
     });
 };
 
-// Get review by order ID (modified from orderItemId to orderId)
+
 exports.getReviewByOrderItem = (req, res) => {
     const userId = getUserId(req.user);
     
@@ -173,7 +173,7 @@ exports.getReviewByOrderItem = (req, res) => {
         return res.status(400).json({ message: 'User ID not found in token' });
     }
     
-    const orderId = req.params.orderItemId; // Keep same param name to avoid changing routes
+    const orderId = req.params.orderItemId; 
 
     const sql = `
         SELECT r.id, r.rating, r.comment, r.created_at, r.updated_at
@@ -196,7 +196,7 @@ exports.getReviewByOrderItem = (req, res) => {
     });
 };
 
-// ⭐ Add or update review for an order (modified from order_item_id to order_id)
+
 exports.addOrUpdateReview = (req, res) => {
     const userId = getUserId(req.user);
     
@@ -204,15 +204,15 @@ exports.addOrUpdateReview = (req, res) => {
         return res.status(400).json({ message: 'User ID not found in token' });
     }
     
-    const { order_item_id, rating, comment } = req.body; // Keep same field name to avoid changing frontend
-    const orderId = order_item_id; // Treat it as orderId
+    const { order_item_id, rating, comment } = req.body; 
+    const orderId = order_item_id; 
     const numericRating = parseInt(rating, 10);
 
     if (!orderId || !numericRating || numericRating < 1 || numericRating > 5) {
         return res.status(400).json({ message: 'Order ID and valid rating (1-5) are required' });
     }
 
-    // Verify the order belongs to the user and is delivered
+    
     db.query(`
         SELECT o.id, o.status 
         FROM orders o
@@ -229,7 +229,7 @@ exports.addOrUpdateReview = (req, res) => {
             return res.status(400).json({ message: 'You can only review delivered orders' });
         }
 
-        // Check if review exists
+        
         db.query('SELECT id FROM reviews WHERE user_id = ? AND order_id = ?', 
                 [userId, orderId], (err, reviewRows) => {
             if (err) {
@@ -238,7 +238,7 @@ exports.addOrUpdateReview = (req, res) => {
             }
 
             if (reviewRows.length > 0) {
-                // Update existing review
+                
                 db.query(`
                     UPDATE reviews 
                     SET rating = ?, comment = ?, updated_at = NOW() 
@@ -251,7 +251,7 @@ exports.addOrUpdateReview = (req, res) => {
                     res.json({ message: 'Review updated successfully' });
                 });
             } else {
-                // Create new review
+                
                 db.query(`
                     INSERT INTO reviews 
                     (user_id, order_id, rating, comment, created_at, updated_at) 
@@ -268,7 +268,7 @@ exports.addOrUpdateReview = (req, res) => {
     });
 };
 
-// ❌ Delete review for an order (modified from order_item_id to order_id)
+
 exports.deleteReview = (req, res) => {
     const userId = getUserId(req.user);
     
@@ -276,7 +276,7 @@ exports.deleteReview = (req, res) => {
         return res.status(400).json({ message: 'User ID not found in token' });
     }
     
-    const orderId = req.params.order_item_id; // Keep same param name to avoid changing routes
+    const orderId = req.params.order_item_id; 
 
     db.query(`
         DELETE r FROM reviews r

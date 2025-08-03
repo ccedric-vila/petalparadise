@@ -259,24 +259,23 @@
       <div class="pdf-btn-container">
   <button id="downloadPdfBtn">PDF</button>
       </div>
-  <!-- Auth + Navigation -->
+  
   <script>
     $(document).ready(function () {
       const token = sessionStorage.getItem('token');
       const userId = sessionStorage.getItem('userId');
       const role = sessionStorage.getItem('role');
       if (!token || !userId || role !== 'admin') {
-    // Show authorization message
+    
     if (role && role !== 'admin') {
         alert("Access Denied: You do not have admin privileges to access this page.");
-        // Or use SweetAlert if available:
-        // Swal.fire("Access Denied", "You do not have admin privileges to access this page.", "error");
+        
     }
     
     sessionStorage.clear();
     window.location.href = "/frontend/Userhandling/login.html";
 }
-      // ✅ Back to Dashboard
+      
       $("#backBtn").click(() => {
         window.location.href = "/frontend/Adminhandling/admindashboard.html";
       });

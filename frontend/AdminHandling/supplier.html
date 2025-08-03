@@ -319,12 +319,12 @@
   <button id="backBtn">« Back to Dashboard</button>
   <h2>Supplier Management</h2>
 
-  <!-- Form control buttons -->
+  
   <div class="form-controls">
     <button id="showFormBtn">➕ Add New Supplier</button>
   </div>
 
-  <!-- Form container (hidden by default) -->
+  
   <div id="formContainer">
     <form id="supplierForm">
       <button type="button" class="close-form-btn" id="closeFormBtn">×</button>
@@ -338,7 +338,7 @@
   </div>
 
   <br>
-
+<!-- datatable -->
   <div class="table-responsive">
     <table id="supplierTable" class="table table-striped table-hover">
       <thead>
@@ -365,11 +365,10 @@
       const role = sessionStorage.getItem('role');
 
       if (!token || !userId || role !== 'admin') {
-    // Show authorization message
+    
     if (role && role !== 'admin') {
         alert("Access Denied: You do not have admin privileges to access this page.");
-        // Or use SweetAlert if available:
-        // Swal.fire("Access Denied", "You do not have admin privileges to access this page.", "error");
+        
     }
     
     sessionStorage.clear();
@@ -379,11 +378,11 @@
         window.location.href = "/frontend/Adminhandling/admindashboard.html";
       });
 
-      // Form show/hide functionality
+      
       $("#showFormBtn").click(function() {
         $("#formContainer").show();
         $("#showFormBtn").hide();
-        // Reset form when showing
+        
         $("#supplierForm")[0].reset();
         $("#supplierId").val('');
         $("#submitBtn").text('Add Supplier');
@@ -394,7 +393,7 @@
         $("#showFormBtn").show();
       });
 
-      // Also add functionality to hide form when clicking outside (optional)
+      
       $(document).click(function(event) {
         if (!$(event.target).closest('#formContainer, #showFormBtn').length) {
           if ($("#formContainer").is(':visible')) {
@@ -413,7 +412,7 @@
         "order": [[0, "desc"]],
         "columnDefs": [
           {
-            "targets": [5], // Actions column
+            "targets": [5], 
             "orderable": false,
             "searchable": false
           }
